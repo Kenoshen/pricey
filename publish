@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# fail if any command returns an error
+set -e
+
+# get the last git tag version
+last=`git describe --tags --abbrev=0`
+# split on v and . to get the array of version digits
+IFS='v.' read -r -a array <<< "$last"
+
+major="${array[1]}"
+minor="${array[2]}"
+patch="${array[3]}"
+
+echo "From: v$major.$minor.$patch"
+
+if [[ $1 = "major" ]]; then
+  major=$((major+1))
+  minor=0
+  patch=0
+elif [[ $1 = "minor" ]]; then
+  minor=$((minor+1))
+  patch=0
+elif [[ $1 = "patch" ]]; then
+  patch=$((patch+1))
+else
+  echo "must pass exactly 1 argument (major, minor, patch)"
+  exit 1
+fi
+
+tag="v$major.$minor.$patch"
+echo "To:   $tag"
+
+echo "Git Tag"
+git tag $tag
+
+echo "Push Tag"
+git push origin $tag
+
+echo "Update Go List"
+go list -m github.com/kenoshen/pricey@$tag
+
+echo "DONE"
+exit 0
