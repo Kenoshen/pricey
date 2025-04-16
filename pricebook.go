@@ -31,6 +31,7 @@ type Category struct {
 
 type Item struct {
 	Id               int64
+	PricebookId      int64
 	CategoryId       int64
 	ParentIds        []int64
 	SubItemIds       []int64
@@ -56,33 +57,44 @@ type SimpleItem struct {
 }
 
 type SubItem struct {
-	SubItemId int64
-	ItemId    int64
-	Quantity  float64
+	SubItemId   int64
+	ItemId      int64
+	PricebookId int64
+	Quantity    float64
 }
 
 type Image struct {
-	Id      int64
-	Base64  string
-	Url     string
-	Created time.Time
+	Id          int64
+	PricebookId int64
+	Base64      string
+	Url         string
+	Created     time.Time
+	Hidden      bool
 }
 
 type Tag struct {
 	Id          int64
+	PricebookId int64
 	Name        string
 	Description string
 	Created     time.Time
 	Updated     time.Time
+	Hidden      bool
 }
 
 type Price struct {
 	Id          int64
+	ItemId      int64
+	CategoryId  int64
+	PricebookId int64
 	Name        string
 	Description string
 	Amount      float64
 	Prefix      string
 	Suffix      string
+	Created     time.Time
+	Updated     time.Time
+	Hidden      bool
 }
 
 /*
