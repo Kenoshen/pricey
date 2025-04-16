@@ -7,7 +7,7 @@ import (
 type Quote struct {
 	Id                int64      `json:"id"`
 	Code              string     `json:"code"`
-	PoNumber          string     `json:"poNumber"`
+	OrderNumber       string     `json:"orderNumber"`
 	LogoId            int64      `json:"logoId"`
 	IssueDate         *time.Time `json:"issueDate"`
 	ExpirationDate    *time.Time `json:"expirationDate"`
@@ -30,6 +30,8 @@ type Quote struct {
 	SoldOn            *time.Time `json:"soldOn"`
 	Created           time.Time  `json:"created"`
 	Updated           time.Time  `json:"updated"`
+	Hidden            bool       `json:"hidden"`
+	Locked            bool       `json:"locked"`
 }
 
 type LineItem struct {
@@ -52,8 +54,9 @@ type LineItem struct {
 	Updated        time.Time `json:"updated"`
 }
 
-type AdjustmentRender struct {
+type Adjustment struct {
 	Id          int64          `json:"id"`
+	QuoteId     int64          `json:"quoteId"`
 	Description string         `json:"description"`
 	Type        AdjustmentType `json:"type"`
 	Amount      float64        `json:"amount"`

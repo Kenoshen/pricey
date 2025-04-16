@@ -2,6 +2,7 @@ package pricey
 
 import (
 	"context"
+	"time"
 )
 
 type Store interface {
@@ -113,6 +114,33 @@ type Store interface {
 	CreateQuoteFromTemplate(ctx context.Context, templateId int64) (*Quote, error)
 	CreateDuplicateQuote(ctx context.Context, quoteId int64) (*Quote, error)
 	GetQuote(ctx context.Context, id int64) (*Quote, error)
+	UpdateQuoteCode(ctx context.Context, id int64, code string) (*Quote, error)
+	UpdateQuoteOrderNumber(ctx context.Context, id int64, orderNumber string) (*Quote, error)
+	UpdateQuoteLogoId(ctx context.Context, id int64, logoId int64) (*Quote, error)
+	UpdateQuoteIssueDate(ctx context.Context, id int64, issueDate *time.Time) (*Quote, error)
+	UpdateQuoteExpirationDate(ctx context.Context, id int64, expirationDate *time.Time) (*Quote, error)
+	UpdateQuotePaymentTerms(ctx context.Context, id int64, paymentTerms string) (*Quote, error)
+	UpdateQuoteNotes(ctx context.Context, id int64, notes string) (*Quote, error)
+	UpdateQuoteSenderId(ctx context.Context, id int64, contactId int64) (*Quote, error)
+	UpdateQuoteBillToId(ctx context.Context, id int64, contactId int64) (*Quote, error)
+	UpdateQuoteShipToId(ctx context.Context, id int64, contactId int64) (*Quote, error)
+	UpdateQuoteSubTotal(ctx context.Context, id int64, subTotal float64) (*Quote, error)
+	UpdateQuoteTotal(ctx context.Context, id int64, total float64) (*Quote, error)
+	UpdateQuoteBalanceDue(ctx context.Context, id int64, balanceDue float64) (*Quote, error)
+	UpdateQuoteBalancePercentDue(ctx context.Context, id int64, balancePercentDue float64) (*Quote, error)
+	UpdateQuoteBalanceDueOn(ctx context.Context, id int64, balanceDueOn *time.Time) (*Quote, error)
+	UpdateQuotePayUrl(ctx context.Context, id int64, payUrl string) (*Quote, error)
+	UpdateQuoteSent(ctx context.Context, id int64, sent bool) (*Quote, error)
+	UpdateQuoteSentOn(ctx context.Context, id int64, sentOn *time.Time) (*Quote, error)
+	UpdateQuoteSold(ctx context.Context, id int64, sold bool) (*Quote, error)
+	UpdateQuoteSoldOn(ctx context.Context, id int64, soldOn *time.Time) (*Quote, error)
+	LockQuote(ctx context.Context, id int64) (*Quote, error)
+	DeleteQuote(ctx context.Context, id int64) (*Quote, error)
+
+	QuoteAddLineItem(ctx context.Context, id int64, lineItemId int64) (*Quote, error)
+	QuoteRemoveLineItem(ctx context.Context, id int64, lineItemId int64) (*Quote, error)
+	QuoteAddAdjustment(ctx context.Context, id int64, adjustmentId int64) (*Quote, error)
+	QuoteRemoveAdjustment(ctx context.Context, id int64, adjustmentId int64) (*Quote, error)
 
 	// ////////////
 	// LINE ITEM
@@ -135,9 +163,10 @@ type Store interface {
 	// ADJUSTMENT
 	// ////////////
 
-	AddAdjustment(ctx context.Context, quoteId int64, description string, amount float64, adjustmentType AdjustmentType) (*LineItem, error)
-	UpdateAdjustment(ctx context.Context, id int64, description string, amount float64, adjustmentType AdjustmentType) (*LineItem, error)
-	RemoveAdjustment(ctx context.Context, id int64) (*LineItem, error)
+	CreateAdjustment(ctx context.Context, quoteId int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error)
+	GetAdjustment(ctx context.Context, id int64) (*Adjustment, error)
+	UpdateAdjustment(ctx context.Context, id int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error)
+	RemoveAdjustment(ctx context.Context, id int64) error
 
 	// ////////////
 	// CONTACT
