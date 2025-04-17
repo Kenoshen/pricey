@@ -5,8 +5,9 @@ set -e
 
 # get the last git tag version
 last=`git describe --tags --abbrev=0`
+last="${last//v}"
 # split on v and . to get the array of version digits
-IFS="v." read -r -a array <<< "$last"
+IFS="." read -r -a array <<< "$last"
 
 major="${array[0]}"
 minor="${array[1]}"
