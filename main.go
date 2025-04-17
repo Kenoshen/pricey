@@ -10,48 +10,48 @@ import (
 type Pricey struct {
 	store     Store
 	pdfClient *gotenberg.Client
-	Pricebook *PriceyPricebook
-	Category  *PriceyCategory
-	Item      *PriceyItem
-	Tag       *PriceyTag
-	Image     *PriceyImage
-	Quote     *PriceyQuote
+	Pricebook *priceyPricebook
+	Category  *priceyCategory
+	Item      *priceyItem
+	Tag       *priceyTag
+	Image     *priceyImage
+	Quote     *priceyQuote
 }
 
 func New(store Store, pdfClient *gotenberg.Client) Pricey {
 	return Pricey{
 		store:     store,
 		pdfClient: pdfClient,
-		Pricebook: &PriceyPricebook{store},
-		Category:  &PriceyCategory{store},
-		Item:      &PriceyItem{store, &PriceySubItem{store}},
-		Tag:       &PriceyTag{store},
-		Image:     &PriceyImage{store},
-		Quote:     &PriceyQuote{store, pdfClient, &PriceyLineItem{store}, &PriceyAdjustment{store}, &PriceyContact{store}},
+		Pricebook: &priceyPricebook{store},
+		Category:  &priceyCategory{store},
+		Item:      &priceyItem{store, &priceySubItem{store}},
+		Tag:       &priceyTag{store},
+		Image:     &priceyImage{store},
+		Quote:     &priceyQuote{store, pdfClient, &priceyLineItem{store}, &priceyAdjustment{store}, &priceyContact{store}},
 	}
 }
 
-type PriceyPricebook struct {
+type priceyPricebook struct {
 	store Store
 }
 
-func (v *PriceyPricebook) New(ctx context.Context, name, description string) (*Pricebook, error) {
+func (v *priceyPricebook) New(ctx context.Context, name, description string) (*Pricebook, error) {
 	return v.store.CreatePricebook(ctx, name, description)
 }
 
-func (v *PriceyPricebook) Get(ctx context.Context, id int64) (*Pricebook, error) {
+func (v *priceyPricebook) Get(ctx context.Context, id int64) (*Pricebook, error) {
 	return v.store.GetPricebook(ctx, id)
 }
 
-func (v *PriceyPricebook) List(ctx context.Context) ([]*Pricebook, error) {
+func (v *priceyPricebook) List(ctx context.Context) ([]*Pricebook, error) {
 	return v.store.GetPricebooks(ctx)
 }
 
-func (v *PriceyPricebook) Set(ctx context.Context, pb Pricebook) (*Pricebook, error) {
+func (v *priceyPricebook) Set(ctx context.Context, pb Pricebook) (*Pricebook, error) {
 	return v.store.UpdatePricebook(ctx, pb)
 }
 
-func (v *PriceyPricebook) Delete(ctx context.Context, id int64) error {
+func (v *priceyPricebook) Delete(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.DeletePricebook(ctx, id)
 		if err != nil {
@@ -78,7 +78,7 @@ func (v *PriceyPricebook) Delete(ctx context.Context, id int64) error {
 	})
 }
 
-func (v *PriceyPricebook) Recover(ctx context.Context, id int64) error {
+func (v *priceyPricebook) Recover(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.RecoverPricebook(ctx, id)
 		if err != nil {
@@ -105,35 +105,35 @@ func (v *PriceyPricebook) Recover(ctx context.Context, id int64) error {
 	})
 }
 
-type PriceyCategory struct {
+type priceyCategory struct {
 	store Store
 }
 
-func (v *PriceyCategory) New(ctx context.Context, name, description string) (*Category, error) {
+func (v *priceyCategory) New(ctx context.Context, name, description string) (*Category, error) {
 	return v.store.CreateCategory(ctx, name, description)
 }
 
-func (v *PriceyCategory) Get(ctx context.Context, id int64) (*Category, error) {
+func (v *priceyCategory) Get(ctx context.Context, id int64) (*Category, error) {
 	return v.store.GetCategory(ctx, id)
 }
 
-func (v *PriceyCategory) List(ctx context.Context, pricebookId int64) ([]*Category, error) {
+func (v *priceyCategory) List(ctx context.Context, pricebookId int64) ([]*Category, error) {
 	return v.store.GetCategories(ctx, pricebookId)
 }
 
-func (v *PriceyCategory) SetInfo(ctx context.Context, id int64, name, description string) (*Category, error) {
+func (v *priceyCategory) SetInfo(ctx context.Context, id int64, name, description string) (*Category, error) {
 	return v.store.UpdateCategoryInfo(ctx, id, name, description)
 }
 
-func (v *PriceyCategory) SetImage(ctx context.Context, id, imageId, thumbnailId int64) (*Category, error) {
+func (v *priceyCategory) SetImage(ctx context.Context, id, imageId, thumbnailId int64) (*Category, error) {
 	return v.store.UpdateCategoryImage(ctx, id, imageId, thumbnailId)
 }
 
-func (v *PriceyCategory) Move(ctx context.Context, id, parentId int64) (*Category, error) {
+func (v *priceyCategory) Move(ctx context.Context, id, parentId int64) (*Category, error) {
 	return v.store.MoveCategory(ctx, id, parentId)
 }
 
-func (v *PriceyCategory) Delete(ctx context.Context, id int64) error {
+func (v *priceyCategory) Delete(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.DeleteCategory(ctx, id)
 		if err != nil {
@@ -152,7 +152,7 @@ func (v *PriceyCategory) Delete(ctx context.Context, id int64) error {
 	})
 }
 
-func (v *PriceyCategory) Recover(ctx context.Context, id int64) error {
+func (v *priceyCategory) Recover(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.RecoverCategory(ctx, id)
 		if err != nil {
@@ -171,28 +171,28 @@ func (v *PriceyCategory) Recover(ctx context.Context, id int64) error {
 	})
 }
 
-type PriceyItem struct {
+type priceyItem struct {
 	store   Store
-	SubItem *PriceySubItem
+	SubItem *priceySubItem
 }
 
-func (v *PriceyItem) New(ctx context.Context, categoryId int64, name, description string) (*Item, error) {
+func (v *priceyItem) New(ctx context.Context, categoryId int64, name, description string) (*Item, error) {
 	return v.store.CreateItem(ctx, categoryId, name, description)
 }
 
-func (v *PriceyItem) Get(ctx context.Context, id int64) (*Item, error) {
+func (v *priceyItem) Get(ctx context.Context, id int64) (*Item, error) {
 	return v.store.GetItem(ctx, id)
 }
 
-func (v *PriceyItem) GetSimple(ctx context.Context, id int64) (*Item, error) {
+func (v *priceyItem) GetSimple(ctx context.Context, id int64) (*Item, error) {
 	return v.store.GetItem(ctx, id)
 }
 
-func (v *PriceyItem) Category(ctx context.Context, categoryId int64) ([]*Item, error) {
+func (v *priceyItem) Category(ctx context.Context, categoryId int64) ([]*Item, error) {
 	return v.store.GetItemsInCategory(ctx, categoryId)
 }
 
-func (v *PriceyItem) Move(ctx context.Context, id, categoryId int64) (*Item, error) {
+func (v *priceyItem) Move(ctx context.Context, id, categoryId int64) (*Item, error) {
 	var item *Item
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -210,43 +210,43 @@ func (v *PriceyItem) Move(ctx context.Context, id, categoryId int64) (*Item, err
 	})
 }
 
-func (v *PriceyItem) SetInfo(ctx context.Context, id int64, code, sku, name, description string) (*Item, error) {
+func (v *priceyItem) SetInfo(ctx context.Context, id int64, code, sku, name, description string) (*Item, error) {
 	return v.store.UpdateItemInfo(ctx, id, code, sku, name, description)
 }
 
-func (v *PriceyItem) SetCost(ctx context.Context, id int64, cost float64) (*Item, error) {
+func (v *priceyItem) SetCost(ctx context.Context, id int64, cost float64) (*Item, error) {
 	return v.store.UpdateItemCost(ctx, id, cost)
 }
 
-func (v *PriceyItem) AddPrice(ctx context.Context, id, priceId int64) (*Item, error) {
+func (v *priceyItem) AddPrice(ctx context.Context, id, priceId int64) (*Item, error) {
 	return v.store.AddItemPrice(ctx, id, priceId)
 }
 
-func (v *PriceyItem) RemovePrice(ctx context.Context, id, priceId int64) (*Item, error) {
+func (v *priceyItem) RemovePrice(ctx context.Context, id, priceId int64) (*Item, error) {
 	return v.store.RemoveItemPrice(ctx, id, priceId)
 }
 
-func (v *PriceyItem) AddTag(ctx context.Context, id, tagId int64) (*Item, error) {
+func (v *priceyItem) AddTag(ctx context.Context, id, tagId int64) (*Item, error) {
 	return v.store.AddItemTag(ctx, id, tagId)
 }
 
-func (v *PriceyItem) RemoveTag(ctx context.Context, id, tagId int64) (*Item, error) {
+func (v *priceyItem) RemoveTag(ctx context.Context, id, tagId int64) (*Item, error) {
 	return v.store.RemoveItemTag(ctx, id, tagId)
 }
 
-func (v *PriceyItem) SetHideFromCustomer(ctx context.Context, id int64, hideFromCustomer bool) (*Item, error) {
+func (v *priceyItem) SetHideFromCustomer(ctx context.Context, id int64, hideFromCustomer bool) (*Item, error) {
 	return v.store.UpdateItemHideFromCustomer(ctx, id, hideFromCustomer)
 }
 
-func (v *PriceyItem) SetImage(ctx context.Context, id int64, imageId, thumbnailId int64) (*Item, error) {
+func (v *priceyItem) SetImage(ctx context.Context, id int64, imageId, thumbnailId int64) (*Item, error) {
 	return v.store.UpdateItemImage(ctx, id, imageId, thumbnailId)
 }
 
-func (v *PriceyItem) Search(ctx context.Context, pricebookId int64, search string) ([]*Item, error) {
+func (v *priceyItem) Search(ctx context.Context, pricebookId int64, search string) ([]*Item, error) {
 	return v.store.SearchItemsInPricebook(ctx, pricebookId, search)
 }
 
-func (v *PriceyItem) Delete(ctx context.Context, id int64) error {
+func (v *priceyItem) Delete(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.DeleteItem(ctx, id)
 		if err != nil {
@@ -262,7 +262,7 @@ func (v *PriceyItem) Delete(ctx context.Context, id int64) error {
 	})
 }
 
-func (v *PriceyItem) Recover(ctx context.Context, id int64) error {
+func (v *priceyItem) Recover(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		err := v.store.RecoverItem(ctx, id)
 		if err != nil {
@@ -278,71 +278,71 @@ func (v *PriceyItem) Recover(ctx context.Context, id int64) error {
 	})
 }
 
-type PriceySubItem struct {
+type priceySubItem struct {
 	store Store
 }
 
-func (v *PriceySubItem) Add(ctx context.Context, id, subItemId, quantity int64) (*Item, error) {
+func (v *priceySubItem) Add(ctx context.Context, id, subItemId, quantity int64) (*Item, error) {
 	return v.store.AddSubItem(ctx, id, subItemId, quantity)
 }
 
-func (v *PriceySubItem) SetQuantity(ctx context.Context, id, subItemId, quantity int64) (*Item, error) {
+func (v *priceySubItem) SetQuantity(ctx context.Context, id, subItemId, quantity int64) (*Item, error) {
 	return v.store.UpdateSubItemQuantity(ctx, id, subItemId, quantity)
 }
 
-func (v *PriceySubItem) Delete(ctx context.Context, id, subItemId int64) (*Item, error) {
+func (v *priceySubItem) Delete(ctx context.Context, id, subItemId int64) (*Item, error) {
 	return v.store.RemoveSubItem(ctx, id, subItemId)
 }
 
-type PriceyPrice struct {
+type priceyPrice struct {
 	store Store
 }
 
-func (v *PriceyPrice) New(ctx context.Context, itemId int64, amount float64) (*Price, error) {
+func (v *priceyPrice) New(ctx context.Context, itemId int64, amount float64) (*Price, error) {
 	return v.store.CreatePrice(ctx, itemId, amount)
 }
 
-func (v *PriceyPrice) Get(ctx context.Context, id int64) (*Price, error) {
+func (v *priceyPrice) Get(ctx context.Context, id int64) (*Price, error) {
 	return v.store.GetPrice(ctx, id)
 }
 
-func (v *PriceyPrice) Item(ctx context.Context, itemId int64) ([]*Price, error) {
+func (v *priceyPrice) Item(ctx context.Context, itemId int64) ([]*Price, error) {
 	return v.store.GetPricesByItem(ctx, itemId)
 }
 
-func (v *PriceyPrice) Update(ctx context.Context, p Price) (*Price, error) {
+func (v *priceyPrice) Update(ctx context.Context, p Price) (*Price, error) {
 	return v.store.UpdatePrice(ctx, p)
 }
 
-func (v *PriceyPrice) Delete(ctx context.Context, id int64) error {
+func (v *priceyPrice) Delete(ctx context.Context, id int64) error {
 	return v.store.DeletePrice(ctx, id)
 }
 
-type PriceyTag struct {
+type priceyTag struct {
 	store Store
 }
 
-func (v *PriceyTag) New(ctx context.Context, pricebookId int64, name, description string) (*Tag, error) {
+func (v *priceyTag) New(ctx context.Context, pricebookId int64, name, description string) (*Tag, error) {
 	return v.store.CreateTag(ctx, pricebookId, name, description)
 }
 
-func (v *PriceyTag) Get(ctx context.Context, id int64) (*Tag, error) {
+func (v *priceyTag) Get(ctx context.Context, id int64) (*Tag, error) {
 	return v.store.GetTag(ctx, id)
 }
 
-func (v *PriceyTag) List(ctx context.Context, pricebookId int64) ([]*Tag, error) {
+func (v *priceyTag) List(ctx context.Context, pricebookId int64) ([]*Tag, error) {
 	return v.store.GetTags(ctx, pricebookId)
 }
 
-func (v *PriceyTag) SetInfo(ctx context.Context, id int64, name, description string) (*Tag, error) {
+func (v *priceyTag) SetInfo(ctx context.Context, id int64, name, description string) (*Tag, error) {
 	return v.store.UpdateTagInfo(ctx, id, name, description)
 }
 
-func (v *PriceyTag) Search(ctx context.Context, pricebookId int64, search string) ([]*Tag, error) {
+func (v *priceyTag) Search(ctx context.Context, pricebookId int64, search string) ([]*Tag, error) {
 	return v.store.SearchTags(ctx, pricebookId, search)
 }
 
-func (v *PriceyTag) Delete(ctx context.Context, id int64) error {
+func (v *priceyTag) Delete(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		tag, err := v.store.GetTag(ctx, id)
 		if err != nil {
@@ -366,119 +366,119 @@ func (v *PriceyTag) Delete(ctx context.Context, id int64) error {
 	})
 }
 
-type PriceyImage struct {
+type priceyImage struct {
 	store Store
 }
 
-func (v *PriceyImage) New(ctx context.Context, data []byte) (int64, error) {
+func (v *priceyImage) New(ctx context.Context, data []byte) (int64, error) {
 	return v.store.CreateImage(ctx, data)
 }
 
-func (v *PriceyImage) Url(ctx context.Context, id int64) (string, error) {
+func (v *priceyImage) Url(ctx context.Context, id int64) (string, error) {
 	return v.store.GetImageUrl(ctx, id)
 }
 
-func (v *PriceyImage) Base64(ctx context.Context, id int64) (string, error) {
+func (v *priceyImage) Base64(ctx context.Context, id int64) (string, error) {
 	return v.store.GetImageBase64(ctx, id)
 }
 
-func (v *PriceyImage) Data(ctx context.Context, id int64) ([]byte, error) {
+func (v *priceyImage) Data(ctx context.Context, id int64) ([]byte, error) {
 	return v.store.GetImageData(ctx, id)
 }
 
-func (v *PriceyImage) Delete(ctx context.Context, id int64) error {
+func (v *priceyImage) Delete(ctx context.Context, id int64) error {
 	return v.store.DeleteImage(ctx, id)
 }
 
-type PriceyQuote struct {
+type priceyQuote struct {
 	store      Store
 	pdfClient  *gotenberg.Client
-	LineItem   *PriceyLineItem
-	Adjustment *PriceyAdjustment
-	Contact    *PriceyContact
+	LineItem   *priceyLineItem
+	Adjustment *priceyAdjustment
+	Contact    *priceyContact
 }
 
-func (v *PriceyQuote) New(ctx context.Context) (*Quote, error) {
+func (v *priceyQuote) New(ctx context.Context) (*Quote, error) {
 	return v.store.CreateQuote(ctx)
 }
 
-func (v *PriceyQuote) FromTemplate(ctx context.Context, templateId int64) (*Quote, error) {
+func (v *priceyQuote) FromTemplate(ctx context.Context, templateId int64) (*Quote, error) {
 	return v.store.CreateQuoteFromTemplate(ctx, templateId)
 }
 
-func (v *PriceyQuote) Duplicate(ctx context.Context, id int64) (*Quote, error) {
+func (v *priceyQuote) Duplicate(ctx context.Context, id int64) (*Quote, error) {
 	return v.store.CreateDuplicateQuote(ctx, id)
 }
 
-func (v *PriceyQuote) Get(ctx context.Context, id int64) (*Quote, error) {
+func (v *priceyQuote) Get(ctx context.Context, id int64) (*Quote, error) {
 	return v.store.GetQuote(ctx, id)
 }
 
-func (v *PriceyQuote) SetCode(ctx context.Context, id int64, code string) (*Quote, error) {
+func (v *priceyQuote) SetCode(ctx context.Context, id int64, code string) (*Quote, error) {
 	return v.store.UpdateQuoteCode(ctx, id, code)
 }
 
-func (v *PriceyQuote) SetOrderNumber(ctx context.Context, id int64, orderNumber string) (*Quote, error) {
+func (v *priceyQuote) SetOrderNumber(ctx context.Context, id int64, orderNumber string) (*Quote, error) {
 	return v.store.UpdateQuoteOrderNumber(ctx, id, orderNumber)
 }
 
-func (v *PriceyQuote) SetLogoId(ctx context.Context, id int64, imageId int64) (*Quote, error) {
+func (v *priceyQuote) SetLogoId(ctx context.Context, id int64, imageId int64) (*Quote, error) {
 	return v.store.UpdateQuoteLogoId(ctx, id, imageId)
 }
 
-func (v *PriceyQuote) SetIssueDate(ctx context.Context, id int64, issueDate *time.Time) (*Quote, error) {
+func (v *priceyQuote) SetIssueDate(ctx context.Context, id int64, issueDate *time.Time) (*Quote, error) {
 	return v.store.UpdateQuoteIssueDate(ctx, id, issueDate)
 }
 
-func (v *PriceyQuote) SetExpirationDate(ctx context.Context, id int64, expirationDate *time.Time) (*Quote, error) {
+func (v *priceyQuote) SetExpirationDate(ctx context.Context, id int64, expirationDate *time.Time) (*Quote, error) {
 	return v.store.UpdateQuoteExpirationDate(ctx, id, expirationDate)
 }
 
-func (v *PriceyQuote) SetPaymentTerms(ctx context.Context, id int64, paymentTerms string) (*Quote, error) {
+func (v *priceyQuote) SetPaymentTerms(ctx context.Context, id int64, paymentTerms string) (*Quote, error) {
 	return v.store.UpdateQuotePaymentTerms(ctx, id, paymentTerms)
 }
 
-func (v *PriceyQuote) SetNotes(ctx context.Context, id int64, notes string) (*Quote, error) {
+func (v *priceyQuote) SetNotes(ctx context.Context, id int64, notes string) (*Quote, error) {
 	return v.store.UpdateQuoteNotes(ctx, id, notes)
 }
 
-func (v *PriceyQuote) SetSenderId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
+func (v *priceyQuote) SetSenderId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
 	return v.store.UpdateQuoteSenderId(ctx, id, contactId)
 }
 
-func (v *PriceyQuote) SetBillToId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
+func (v *priceyQuote) SetBillToId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
 	return v.store.UpdateQuoteBillToId(ctx, id, contactId)
 }
 
-func (v *PriceyQuote) SetShipToId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
+func (v *priceyQuote) SetShipToId(ctx context.Context, id int64, contactId int64) (*Quote, error) {
 	return v.store.UpdateQuoteShipToId(ctx, id, contactId)
 }
 
-func (v *PriceyQuote) SetSubTotal(ctx context.Context, id int64, subTotal float64) (*Quote, error) {
+func (v *priceyQuote) SetSubTotal(ctx context.Context, id int64, subTotal float64) (*Quote, error) {
 	return v.store.UpdateQuoteSubTotal(ctx, id, subTotal)
 }
 
-func (v *PriceyQuote) SetTotal(ctx context.Context, id int64, total float64) (*Quote, error) {
+func (v *priceyQuote) SetTotal(ctx context.Context, id int64, total float64) (*Quote, error) {
 	return v.store.UpdateQuoteTotal(ctx, id, total)
 }
 
-func (v *PriceyQuote) SetBalanceDue(ctx context.Context, id int64, balanceDue float64) (*Quote, error) {
+func (v *priceyQuote) SetBalanceDue(ctx context.Context, id int64, balanceDue float64) (*Quote, error) {
 	return v.store.UpdateQuoteBalanceDue(ctx, id, balanceDue)
 }
 
-func (v *PriceyQuote) SetBalancePercentDue(ctx context.Context, id int64, balancePercentDue float64) (*Quote, error) {
+func (v *priceyQuote) SetBalancePercentDue(ctx context.Context, id int64, balancePercentDue float64) (*Quote, error) {
 	return v.store.UpdateQuoteBalancePercentDue(ctx, id, balancePercentDue)
 }
 
-func (v *PriceyQuote) SetBalanceDueOn(ctx context.Context, id int64, balanceDueOn *time.Time) (*Quote, error) {
+func (v *priceyQuote) SetBalanceDueOn(ctx context.Context, id int64, balanceDueOn *time.Time) (*Quote, error) {
 	return v.store.UpdateQuoteBalanceDueOn(ctx, id, balanceDueOn)
 }
 
-func (v *PriceyQuote) SetPayUrl(ctx context.Context, id int64, payUrl string) (*Quote, error) {
+func (v *priceyQuote) SetPayUrl(ctx context.Context, id int64, payUrl string) (*Quote, error) {
 	return v.store.UpdateQuotePayUrl(ctx, id, payUrl)
 }
 
-func (v *PriceyQuote) SetSent(ctx context.Context, id int64, sent bool) (*Quote, error) {
+func (v *priceyQuote) SetSent(ctx context.Context, id int64, sent bool) (*Quote, error) {
 	var q *Quote
 	return q, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -497,7 +497,7 @@ func (v *PriceyQuote) SetSent(ctx context.Context, id int64, sent bool) (*Quote,
 	})
 }
 
-func (v *PriceyQuote) SetSold(ctx context.Context, id int64, sold bool) (*Quote, error) {
+func (v *priceyQuote) SetSold(ctx context.Context, id int64, sold bool) (*Quote, error) {
 	var q *Quote
 	return q, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -516,19 +516,19 @@ func (v *PriceyQuote) SetSold(ctx context.Context, id int64, sold bool) (*Quote,
 	})
 }
 
-func (v *PriceyQuote) Lock(ctx context.Context, id int64) (*Quote, error) {
+func (v *priceyQuote) Lock(ctx context.Context, id int64) (*Quote, error) {
 	return v.store.LockQuote(ctx, id)
 }
 
-func (v *PriceyQuote) Delete(ctx context.Context, id int64) (*Quote, error) {
+func (v *priceyQuote) Delete(ctx context.Context, id int64) (*Quote, error) {
 	return v.store.DeleteQuote(ctx, id)
 }
 
-type PriceyLineItem struct {
+type priceyLineItem struct {
 	store Store
 }
 
-func (v *PriceyLineItem) New(ctx context.Context, quoteId int64, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
+func (v *priceyLineItem) New(ctx context.Context, quoteId int64, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
 	var item *LineItem
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -547,7 +547,7 @@ func (v *PriceyLineItem) New(ctx context.Context, quoteId int64, description str
 	})
 }
 
-func (v *PriceyLineItem) NewSub(ctx context.Context, quoteId, parentId int64, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
+func (v *priceyLineItem) NewSub(ctx context.Context, quoteId, parentId int64, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
 	var item *LineItem
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -566,7 +566,7 @@ func (v *PriceyLineItem) NewSub(ctx context.Context, quoteId, parentId int64, de
 	})
 }
 
-func (v *PriceyLineItem) Duplicate(ctx context.Context, id int64) (*LineItem, error) {
+func (v *priceyLineItem) Duplicate(ctx context.Context, id int64) (*LineItem, error) {
 	var item *LineItem
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -585,47 +585,47 @@ func (v *PriceyLineItem) Duplicate(ctx context.Context, id int64) (*LineItem, er
 	})
 }
 
-func (v *PriceyLineItem) Get(ctx context.Context, id int64) (*LineItem, error) {
+func (v *priceyLineItem) Get(ctx context.Context, id int64) (*LineItem, error) {
 	return v.store.GetLineItem(ctx, id)
 }
 
-func (v *PriceyLineItem) Move(ctx context.Context, id int64, parentId *int64) (*LineItem, error) {
+func (v *priceyLineItem) Move(ctx context.Context, id int64, parentId *int64) (*LineItem, error) {
 	return v.store.MoveLineItem(ctx, id, parentId)
 }
 
-func (v *PriceyLineItem) SetImage(ctx context.Context, id int64, imageId *int64) (*LineItem, error) {
+func (v *priceyLineItem) SetImage(ctx context.Context, id int64, imageId *int64) (*LineItem, error) {
 	return v.store.UpdateLineItemImage(ctx, id, imageId)
 }
 
-func (v *PriceyLineItem) SetDescription(ctx context.Context, id int64, description string) (*LineItem, error) {
+func (v *priceyLineItem) SetDescription(ctx context.Context, id int64, description string) (*LineItem, error) {
 	return v.store.UpdateLineItemDescription(ctx, id, description)
 }
 
-func (v *PriceyLineItem) SetQuantity(ctx context.Context, id int64, quantity float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetQuantity(ctx context.Context, id int64, quantity float64, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemQuantity(ctx, id, quantity, prefix, suffix)
 }
 
-func (v *PriceyLineItem) SetUnitPrice(ctx context.Context, id int64, unitPrice float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetUnitPrice(ctx context.Context, id int64, unitPrice float64, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemUnitPrice(ctx, id, unitPrice, prefix, suffix)
 }
 
-func (v *PriceyLineItem) SetAmount(ctx context.Context, id int64, amount *float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetAmount(ctx context.Context, id int64, amount *float64, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemAmount(ctx, id, amount, prefix, suffix)
 }
 
-func (v *PriceyLineItem) SetOpen(ctx context.Context, id int64, open bool) (*LineItem, error) {
+func (v *priceyLineItem) SetOpen(ctx context.Context, id int64, open bool) (*LineItem, error) {
 	return v.store.UpdateLineItemOpen(ctx, id, open)
 }
 
-func (v *PriceyLineItem) Delete(ctx context.Context, id int64) error {
+func (v *priceyLineItem) Delete(ctx context.Context, id int64) error {
 	return v.store.DeleteLineItem(ctx, id)
 }
 
-type PriceyAdjustment struct {
+type priceyAdjustment struct {
 	store Store
 }
 
-func (v *PriceyAdjustment) New(ctx context.Context, quoteId int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
+func (v *priceyAdjustment) New(ctx context.Context, quoteId int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
 	var a *Adjustment
 	return a, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -643,15 +643,15 @@ func (v *PriceyAdjustment) New(ctx context.Context, quoteId int64, description s
 	})
 }
 
-func (v *PriceyAdjustment) Get(ctx context.Context, id int64) (*Adjustment, error) {
+func (v *priceyAdjustment) Get(ctx context.Context, id int64) (*Adjustment, error) {
 	return v.store.GetAdjustment(ctx, id)
 }
 
-func (v *PriceyAdjustment) Update(ctx context.Context, id int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
+func (v *priceyAdjustment) Update(ctx context.Context, id int64, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
 	return v.store.UpdateAdjustment(ctx, id, description, amount, adjustmentType)
 }
 
-func (v *PriceyAdjustment) Delete(ctx context.Context, id int64) error {
+func (v *priceyAdjustment) Delete(ctx context.Context, id int64) error {
 	return v.store.Transaction(func(ctx context.Context) error {
 		a, err := v.store.GetAdjustment(ctx, id)
 		if err != nil {
@@ -675,10 +675,10 @@ func (v *PriceyAdjustment) Delete(ctx context.Context, id int64) error {
 	})
 }
 
-type PriceyContact struct {
+type priceyContact struct {
 	store Store
 }
 
-func (v *PriceyContact) Get(ctx context.Context, id int64) (*Contact, error) {
+func (v *priceyContact) Get(ctx context.Context, id int64) (*Contact, error) {
 	return v.store.GetContact(ctx, id)
 }
