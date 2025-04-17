@@ -1,0 +1,78 @@
+{{ template "base" . }}
+{{ define "base" }}<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Standard Quote Template</title>
+    <style>
+      body {
+        font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+      }
+      .debug {
+        background-color: red;
+      }
+      .centerContent {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+      }
+      .spaceBetween {
+        justify-content: space-between;
+      }
+      .alignCenter {
+        align-items: center;
+      }
+      .textAlignRight {
+        text-align: right;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .pr {
+        padding-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row spaceBetween">
+      <div style="width: 30%;">
+        {{template "Image" .Logo}}
+      </div>
+      <div>
+        <table>
+          {{if ne .Code ""}}<tr><td class="bold pr">Estimate #: </td><td class="textAlignRight">{{.Code}}</td></tr>{{end}}
+          {{if ne .OrderNumber ""}}<tr><td class="bold pr">Order #: </td><td class="textAlignRight">{{.OrderNumber}}</td></tr>{{end}}
+          {{if ne .IssueDate nil}}<tr><td class="bold pr">Issued: </td><td class="textAlignRight">{{.IssueDate.Format "January 2, 2006"}}</td></tr>{{end}}
+          {{if ne .ExpirationDate nil}}<tr><td class="bold pr">Expires: </td><td class="textAlignRight">{{.ExpirationDate.Format "January 2, 2006"}}</td></tr>{{end}}
+        </table>
+      </div>
+    </div>
+    <div class="row spaceBetween" style="gap: 10px;">
+      <div>
+        <h3>Bill To:</h3>
+        {{template "Contact" .BillTo}}
+      </div>
+      <div>
+        <h3>Ship To:</h3>
+        {{template "Contact" .ShipTo}}
+      </div>
+      <div class="textAlignRight">
+        <h3>Sender:</h3>
+        {{template "Contact" .Sender}}
+      </div>
+    </div>
+  </body>
+</html>{{end}}
+{{ define "Image" }}{{if ne . nil}}<img style="width: 100%" src="{{if ne .Url ""}}{{.Url}}{{else if ne .Base64 ""}}data:image/png;base64, {{.Base64}}{{end}}"/>{{end}}{{end}}
+{{ define "Contact" }}{{if ne . nil}}<table class="">
+  {{if ne .CompanyName ""}}<tr><td>{{.CompanyName}}</td></tr>{{end}}
+  {{if ne .Name ""}}<tr><td>{{.Name}}</td></tr>{{end}}
+  {{range .Phones}}<tr><td>{{.}}</td></tr>{{end}}
+  {{if ne .Street ""}}<tr><td>{{.Street}}</td></tr>{{end}}
+  <tr><td>{{.City}}, {{.State}} {{.Zip}}</td></tr>
+</table>{{end}}{{end}}

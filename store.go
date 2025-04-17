@@ -111,7 +111,6 @@ type Store interface {
 	// ////////////
 
 	CreateQuote(ctx context.Context) (*Quote, error)
-	CreateQuoteFromTemplate(ctx context.Context, templateId int64) (*Quote, error)
 	CreateDuplicateQuote(ctx context.Context, quoteId int64) (*Quote, error)
 	GetQuote(ctx context.Context, id int64) (*Quote, error)
 	UpdateQuoteCode(ctx context.Context, id int64, code string) (*Quote, error)

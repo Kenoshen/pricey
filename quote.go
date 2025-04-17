@@ -83,3 +83,52 @@ type Contact struct {
 	State       string
 	Zip         string
 }
+
+type FullQuote struct {
+	Id                int64
+	Code              string
+	OrderNumber       string
+	Logo              *Image
+	IssueDate         *time.Time
+	ExpirationDate    *time.Time
+	PaymentTerms      string
+	Notes             string
+	Sender            *Contact
+	BillTo            *Contact
+	ShipTo            *Contact
+	LineItems         []*FullLineItem
+	SubTotal          float64
+	Adjustments       []*Adjustment
+	Total             float64
+	BalanceDue        float64
+	BalancePercentDue float64
+	BalanceDueOn      *time.Time
+	PayUrl            string
+	Sent              bool
+	SentOn            *time.Time
+	Sold              bool
+	SoldOn            *time.Time
+	Created           time.Time
+	Updated           time.Time
+	Hidden            bool
+	Locked            bool
+}
+
+type FullLineItem struct {
+	Id             int64
+	SubItems       []*FullLineItem
+	Image          *Image
+	Description    string
+	Quantity       float64
+	QuantitySuffix string
+	QuantityPrefix string
+	UnitPrice      float64
+	UnitSuffix     string
+	UnitPrefix     string
+	Amount         *float64
+	AmountSuffix   string
+	AmountPrefix   string
+	Open           bool
+	Created        time.Time
+	Updated        time.Time
+}

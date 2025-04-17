@@ -66,6 +66,7 @@ type SubItem struct {
 type Image struct {
 	Id          int64
 	PricebookId int64
+	Data        []byte
 	Base64      string
 	Url         string
 	Created     time.Time

@@ -2,6 +2,9 @@ package pricey
 
 import (
 	"context"
+	_ "embed"
+	"html/template"
+	"io"
 	"time"
 
 	gotenberg "github.com/starwalkn/gotenberg-go-client/v8"
@@ -27,7 +30,13 @@ func New(store Store, pdfClient *gotenberg.Client) Pricey {
 		Item:      &priceyItem{store, &priceySubItem{store}},
 		Tag:       &priceyTag{store},
 		Image:     &priceyImage{store},
-		Quote:     &priceyQuote{store, pdfClient, &priceyLineItem{store}, &priceyAdjustment{store}, &priceyContact{store}},
+		Quote: &priceyQuote{
+			store:      store,
+			LineItem:   &priceyLineItem{store},
+			Adjustment: &priceyAdjustment{store},
+			Contact:    &priceyContact{store},
+			Print:      newPrinter(store, pdfClient),
+		},
 	}
 }
 
@@ -392,18 +401,14 @@ func (v *priceyImage) Delete(ctx context.Context, id int64) error {
 
 type priceyQuote struct {
 	store      Store
-	pdfClient  *gotenberg.Client
 	LineItem   *priceyLineItem
 	Adjustment *priceyAdjustment
 	Contact    *priceyContact
+	Print      *priceyPrint
 }
 
 func (v *priceyQuote) New(ctx context.Context) (*Quote, error) {
 	return v.store.CreateQuote(ctx)
-}
-
-func (v *priceyQuote) FromTemplate(ctx context.Context, templateId int64) (*Quote, error) {
-	return v.store.CreateQuoteFromTemplate(ctx, templateId)
 }
 
 func (v *priceyQuote) Duplicate(ctx context.Context, id int64) (*Quote, error) {
@@ -681,4 +686,34 @@ type priceyContact struct {
 
 func (v *priceyContact) Get(ctx context.Context, id int64) (*Contact, error) {
 	return v.store.GetContact(ctx, id)
+}
+
+type priceyPrint struct {
+	store            Store
+	pdfClient        *gotenberg.Client
+	standardTemplate *template.Template
+}
+
+//go:embed templates/standard.html
+var standardTemplate string
+
+func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
+	standardTemplate, err := template.New("standard").Parse(standardTemplate)
+	if err != nil {
+		panic("failed to parse standard template: " + err.Error())
+	}
+
+	return &priceyPrint{
+		store:            store,
+		pdfClient:        pdfClient,
+		standardTemplate: standardTemplate,
+	}
+}
+
+func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
+	q, err := v.store.GetQuote(ctx, id)
+	if err != nil {
+		return err
+	}
+	return v.standardTemplate.Execute(w, q)
 }
