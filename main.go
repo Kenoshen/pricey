@@ -1,6 +1,7 @@
 package pricey
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
@@ -760,8 +761,77 @@ func depthPadding(v int, paddingPixels, base int) int {
 	return (v * paddingPixels) + base
 }
 
+func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, error) {
+	q := &FullQuote{Id: id}
+	return q, v.store.Transaction(func(ctx context.Context) error {
+		quote, err := v.store.GetQuote(ctx, id)
+		if err != nil {
+			return err
+		}
+		if quote.LogoId >= 0 {
+			imageUrl, err := v.store.GetImageUrl(ctx, quote.LogoId)
+			if err != nil {
+				return err
+			}
+			if imageUrl != "" {
+				q.Logo = &Image{
+					Id:  quote.LogoId,
+					Url: imageUrl,
+				}
+			}
+		}
+		if quote.SenderId >= 0 {
+			q.Sender, err = v.store.GetContact(ctx, quote.SenderId)
+			if err != nil {
+				return err
+			}
+		}
+		if quote.BillToId >= 0 {
+			q.BillTo, err = v.store.GetContact(ctx, quote.BillToId)
+			if err != nil {
+				return err
+			}
+		}
+		if quote.ShipToId >= 0 {
+			q.ShipTo, err = v.store.GetContact(ctx, quote.ShipToId)
+			if err != nil {
+				return err
+			}
+		}
+		// todo: get line items
+		// todo: calculate subTotal
+		// todo: get adjustments
+		// todo: calculate total
+		// todo: calculate balanceDue
+
+		return nil
+	})
+}
+
 func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
-	q, err := v.store.GetQuote(ctx, id)
+	q, err := v.GetFullQuote(ctx, id)
+	if err != nil {
+		return err
+	}
+	buf := bytes.Buffer{}
+	err = v.standardTemplate.Execute(&buf, q)
+	if err != nil {
+		return err
+	}
+	resp, err := print(v.pdfClient, &buf)
+	if err != nil {
+		return err
+	}
+	defer resp.Close()
+	_, err = io.Copy(w, resp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *priceyPrint) StandardHTML(ctx context.Context, id int64, w io.Writer) error {
+	q, err := v.GetFullQuote(ctx, id)
 	if err != nil {
 		return err
 	}
