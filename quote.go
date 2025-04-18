@@ -17,11 +17,11 @@ type Quote struct {
 	BillToId          int64      `json:"billToId"`
 	ShipToId          int64      `json:"shipToId"`
 	LineItemIds       []int64    `json:"lineItemIds"`
-	SubTotal          float64    `json:"subTotal"`
+	SubTotal          int64      `json:"subTotal"`
 	AdjustmentIds     []int64    `json:"adjustmentsIds"`
-	Total             float64    `json:"total"`
-	BalanceDue        float64    `json:"balanceDue"`
-	BalancePercentDue float64    `json:"balancePercentDue"`
+	Total             int64      `json:"total"`
+	BalanceDue        int64      `json:"balanceDue"`
+	BalancePercentDue int64      `json:"balancePercentDue"`
 	BalanceDueOn      *time.Time `json:"balanceDueOn"`
 	PayUrl            string     `json:"payUrl"`
 	Sent              bool       `json:"sent"`
@@ -40,13 +40,13 @@ type LineItem struct {
 	ParentId       *int64    `json:"parentId"`
 	ImageId        *int64    `json:"imageId"`
 	Description    string    `json:"description"`
-	Quantity       float64   `json:"quantity"`
+	Quantity       int64     `json:"quantity"`
 	QuantitySuffix string    `json:"quantitySuffix"`
 	QuantityPrefix string    `json:"quantityPrefix"`
-	UnitPrice      float64   `json:"unitPrice"`
+	UnitPrice      int64     `json:"unitPrice"`
 	UnitSuffix     string    `json:"unitSuffix"`
 	UnitPrefix     string    `json:"unitPrefix"`
-	Amount         *float64  `json:"amount"`
+	Amount         *int64    `json:"amount"`
 	AmountSuffix   string    `json:"amountSuffix"`
 	AmountPrefix   string    `json:"amountPrefix"`
 	Open           bool      `json:"open"`
@@ -59,7 +59,7 @@ type Adjustment struct {
 	QuoteId     int64          `json:"quoteId"`
 	Description string         `json:"description"`
 	Type        AdjustmentType `json:"type"`
-	Amount      float64        `json:"amount"`
+	Amount      int64          `json:"amount"`
 	Created     time.Time      `json:"created"`
 	Updated     time.Time      `json:"updated"`
 }
@@ -85,50 +85,50 @@ type Contact struct {
 }
 
 type FullQuote struct {
-	Id                int64
-	Code              string
-	OrderNumber       string
-	Logo              *Image
-	IssueDate         *time.Time
-	ExpirationDate    *time.Time
-	PaymentTerms      string
-	Notes             string
-	Sender            *Contact
-	BillTo            *Contact
-	ShipTo            *Contact
-	LineItems         []*FullLineItem
-	SubTotal          float64
-	Adjustments       []*Adjustment
-	Total             float64
-	BalanceDue        float64
-	BalancePercentDue float64
-	BalanceDueOn      *time.Time
-	PayUrl            string
-	Sent              bool
-	SentOn            *time.Time
-	Sold              bool
-	SoldOn            *time.Time
-	Created           time.Time
-	Updated           time.Time
-	Hidden            bool
-	Locked            bool
+	Id             int64
+	Code           string
+	OrderNumber    string
+	Logo           *Image
+	IssueDate      *time.Time
+	ExpirationDate *time.Time
+	PaymentTerms   string
+	Notes          string
+	Sender         *Contact
+	BillTo         *Contact
+	ShipTo         *Contact
+	LineItems      []*FullLineItem
+	SubTotal       int64
+	Adjustments    []*Adjustment
+	Total          int64
+	BalanceDue     int64
+	BalanceDueOn   *time.Time
+	PayUrl         string
+	Sent           bool
+	SentOn         *time.Time
+	Sold           bool
+	SoldOn         *time.Time
+	Created        time.Time
+	Updated        time.Time
+	Hidden         bool
+	Locked         bool
 }
 
 type FullLineItem struct {
-	Id             int64
-	SubItems       []*FullLineItem
-	Image          *Image
-	Description    string
-	Quantity       float64
-	QuantitySuffix string
-	QuantityPrefix string
-	UnitPrice      float64
-	UnitSuffix     string
-	UnitPrefix     string
-	Amount         *float64
-	AmountSuffix   string
-	AmountPrefix   string
-	Open           bool
-	Created        time.Time
-	Updated        time.Time
+	Id              int64
+	Depth           int
+	Number          string
+	SubItems        []*FullLineItem
+	Image           *Image
+	Description     string
+	Quantity        int64
+	QuantitySuffix  string
+	QuantityPrefix  string
+	UnitPrice       int64
+	UnitPriceSuffix string
+	UnitPricePrefix string
+	Amount          int64
+	AmountSuffix    string
+	AmountPrefix    string
+	Created         time.Time
+	Updated         time.Time
 }

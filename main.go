@@ -3,8 +3,10 @@ package pricey
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"html/template"
 	"io"
+	"strings"
 	"time"
 
 	gotenberg "github.com/starwalkn/gotenberg-go-client/v8"
@@ -698,7 +700,12 @@ type priceyPrint struct {
 var standardTemplate string
 
 func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
-	standardTemplate, err := template.New("standard").Parse(standardTemplate)
+	funcs := template.FuncMap{
+		"pennies":      pennies,
+		"quantity":     quantity,
+		"depthPadding": depthPadding,
+	}
+	standardTemplate, err := template.New("standard").Funcs(funcs).Parse(standardTemplate)
 	if err != nil {
 		panic("failed to parse standard template: " + err.Error())
 	}
@@ -708,6 +715,49 @@ func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
 		pdfClient:        pdfClient,
 		standardTemplate: standardTemplate,
 	}
+}
+
+func pennies(v int64) string {
+	if v == 0 {
+		return ""
+	}
+	d := fmt.Sprintf("%d", v/100)
+	ld := len(d)
+	sb := strings.Builder{}
+	for i := ld - 1; i >= 0; i-- {
+		c := d[i]
+		if ld-i > 1 && (ld-i)%3 == 1 {
+			sb.WriteString(",")
+		}
+		sb.WriteByte(c)
+	}
+	d = sb.String()
+	ld = len(d)
+	sb = strings.Builder{}
+	for i := ld - 1; i >= 0; i-- {
+		sb.WriteByte(d[i])
+	}
+
+	pens := v % 100
+	return fmt.Sprintf("%s.%02d", sb.String(), pens)
+}
+
+func quantity(v int64) string {
+	if v == 0 {
+		return ""
+	}
+	whole := v / 100
+	frac := v % 100
+	if frac == 0 {
+		return fmt.Sprintf("%d", whole)
+	} else if frac%10 == 0 {
+		return fmt.Sprintf("%d.%d", whole, frac/10)
+	}
+	return fmt.Sprintf("%d.%d", whole, frac)
+}
+
+func depthPadding(v int, paddingPixels, base int) int {
+	return (v * paddingPixels) + base
 }
 
 func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {

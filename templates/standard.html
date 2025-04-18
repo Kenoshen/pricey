@@ -7,6 +7,11 @@
     <style>
       body {
         font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+        color: #3e3e3e;
+      }
+      h1, h2, h3, h4, h5 {
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
       .debug {
         background-color: red;
@@ -14,6 +19,11 @@
       .centerContent {
         display: flex;
         justify-content: center;
+        align-items: center;
+      }
+      .centerLeftContent {
+        display: flex;
+        justify-content: start;
         align-items: center;
       }
       .row {
@@ -36,6 +46,41 @@
       .pr {
         padding-right: 5px;
       }
+      .px {
+        padding-right: 5px;
+        padding-left: 5px;
+      }
+      .pxl {
+        padding-right: 10px;
+        padding-left: 10px;
+      }
+      .py {
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+      .mx {
+        padding-right: 5px;
+        padding-left: 5px;
+      }
+      .bg-slate {
+        background-color: #efefef;
+        color: #555;
+      }
+      .hr {
+        border-bottom: 1px solid #e0e0e0;
+      }
+      .text {
+        white-space: pre-wrap;
+      }
+      .light {
+        color: #aaa;
+      }
+      hr, p {
+        margin: 0;
+      }
+      hr {
+        color: #e0e0e0;
+      }
     </style>
   </head>
   <body>
@@ -44,35 +89,83 @@
         {{template "Image" .Logo}}
       </div>
       <div>
-        <table>
-          {{if ne .Code ""}}<tr><td class="bold pr">Estimate #: </td><td class="textAlignRight">{{.Code}}</td></tr>{{end}}
-          {{if ne .OrderNumber ""}}<tr><td class="bold pr">Order #: </td><td class="textAlignRight">{{.OrderNumber}}</td></tr>{{end}}
-          {{if ne .IssueDate nil}}<tr><td class="bold pr">Issued: </td><td class="textAlignRight">{{.IssueDate.Format "January 2, 2006"}}</td></tr>{{end}}
-          {{if ne .ExpirationDate nil}}<tr><td class="bold pr">Expires: </td><td class="textAlignRight">{{.ExpirationDate.Format "January 2, 2006"}}</td></tr>{{end}}
+        <table class="textAlignRight">
+          {{if ne .Code ""}}<tr><td class="bold pr">Estimate # </td><td class="">{{.Code}}</td></tr>{{end}}
+          {{if ne .OrderNumber ""}}<tr><td class="bold pr">Order # </td><td class="">{{.OrderNumber}}</td></tr>{{end}}
+          {{if ne .IssueDate nil}}<tr><td class="bold pr">Issued </td><td class="">{{.IssueDate.Format "January 2, 2006"}}</td></tr>{{end}}
+          {{if ne .ExpirationDate nil}}<tr><td class="bold pr">Expires </td><td class="">{{.ExpirationDate.Format "January 2, 2006"}}</td></tr>{{end}}
         </table>
       </div>
     </div>
-    <div class="row spaceBetween" style="gap: 10px;">
-      <div>
-        <h3>Bill To:</h3>
+    <div class="row spaceBetween" style="gap: 20px;">
+      {{if ne .BillTo nil}}<div>
+        <h3 class="hr">Bill To</h3>
         {{template "Contact" .BillTo}}
+      </div>{{end}}
+      {{if ne .ShipTo nil}}<div>
+        <h3 class="hr">Ship To</h3>
+        {{template "Contact" .ShipTo}}
+      </div>{{end}}
+      {{if ne .Sender nil}}<div class="textAlignRight">
+        <h3 class="hr">Sender</h3>
+        {{template "Contact" .Sender}}
+      </div>{{end}}
+    </div>
+    <table style="margin-top: 10px; width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr class="bg-slate hr" style="font-size: 1.2em;">
+          <th class="pxl py" style="width: 100%; text-align: left;">Description</th>
+          <th class="pxl py textAlignRight">Quantity</th>
+          <th class="pxl py textAlignRight">Unit&nbspPrice</th>
+          <th class="pxl py textAlignRight">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .LineItems}}{{template "LineItem" .}}{{end}}
+      </tbody>
+    </table>
+    <div class="row">
+      <div class="" style="flex: 1; padding-right: 20px; padding-top: 20px;">
+        {{if ne .PaymentTerms ""}}<div style="margin-bottom: 30px;">
+          <h3 class="hr">Payment Terms</h3>
+          <p class="text">{{.PaymentTerms}}</p>
+        </div>{{end}}
+
+        {{if ne .Notes ""}}<div>
+          <h3 class="hr">Notes</h3>
+          <p class="text">{{.Notes}}</p>
+        </div>{{end}}
+
       </div>
       <div>
-        <h3>Ship To:</h3>
-        {{template "Contact" .ShipTo}}
-      </div>
-      <div class="textAlignRight">
-        <h3>Sender:</h3>
-        {{template "Contact" .Sender}}
+        <table class="textAlignRight" style="border-collapse: collapse;">
+          <tr class="hr bg-slate"><td class="pxl py bold">SubTotal</td><td class="pxl">${{pennies .SubTotal}}</td><tr>
+          {{range .Adjustments}}{{template "Adjustment" .}}{{end}}
+          <tr class="hr bg-slate"><td class="pxl py bold">Total</td><td class="pxl">${{pennies .Total}}</td><tr>
+          {{if gt .BalanceDue 0}}<tr class="hr"><td class="pxl py bold">{{if ne .BalanceDueOn nil}}({{.BalanceDueOn.Format "1/02/06"}}) {{end}}Balance Due</td><td class="pxl">${{pennies .BalanceDue}}</td><tr>{{end}}
+            {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2"><a href="{{.PayUrl}}">Pay Here</a></td><tr>{{end}}
+        </table>
       </div>
     </div>
   </body>
 </html>{{end}}
 {{ define "Image" }}{{if ne . nil}}<img style="width: 100%" src="{{if ne .Url ""}}{{.Url}}{{else if ne .Base64 ""}}data:image/png;base64, {{.Base64}}{{end}}"/>{{end}}{{end}}
-{{ define "Contact" }}{{if ne . nil}}<table class="">
+{{ define "Thumbnail" }}{{if ne . nil}}<div class="centerContent" style="width: 80px; height: 80px;"><img style="max-width: 100%; max-height: 100%; margin-right: 10px;" src="{{if ne .Url ""}}{{.Url}}{{else if ne .Base64 ""}}data:image/png;base64, {{.Base64}}{{end}}"/></div>{{end}}{{end}}
+{{ define "Contact" }}{{if ne . nil}}<table class="px mx">
   {{if ne .CompanyName ""}}<tr><td>{{.CompanyName}}</td></tr>{{end}}
   {{if ne .Name ""}}<tr><td>{{.Name}}</td></tr>{{end}}
-  {{range .Phones}}<tr><td>{{.}}</td></tr>{{end}}
+  {{range .Phones}}<tr><td><a href="tel:{{.}}">{{.}}</a></td></tr>{{end}}
+  {{range .Emails}}<tr><td><a href="mailto:{{.}}">{{.}}</a></td></tr>{{end}}
+  {{range .Websites}}<tr><td><a href="{{.}}">{{.}}</a></td></tr>{{end}}
   {{if ne .Street ""}}<tr><td>{{.Street}}</td></tr>{{end}}
   <tr><td>{{.City}}, {{.State}} {{.Zip}}</td></tr>
 </table>{{end}}{{end}}
+{{ define "LineItem" }}<tr class="hr">
+  <td class="pxl py centerLeftContent" style="gap: 10px; padding-left: {{depthPadding .Depth 20 10}}px">{{if ne .Number ""}}<div class="pr light">{{.Number}}</div>{{end}}{{template "Thumbnail" .Image}}{{.Description}}</td>
+  <td class="pxl py textAlignRight">{{.QuantityPrefix}}{{quantity .Quantity}}{{.QuantitySuffix}}</td>
+  <td class="pxl py textAlignRight">{{.UnitPricePrefix}}{{pennies .UnitPrice}}{{.UnitPriceSuffix}}</td>
+  <td class="pxl py textAlignRight">{{.AmountPrefix}}{{pennies .Amount}}{{.AmountSuffix}}</td>
+</tr>{{range .SubItems}}{{template "LineItem" .}}{{end}}{{end}}
+{{ define "Adjustment" }}<tr class="hr">
+  <td class="pxl py">{{.Description}}</td><td class="pxl py">${{pennies .Amount}}</td>
+</tr>{{end}}
