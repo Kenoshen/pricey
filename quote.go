@@ -35,23 +35,23 @@ type Quote struct {
 }
 
 type LineItem struct {
-	Id             int64     `json:"id"`
-	QuoteId        int64     `json:"quoteId"`
-	ParentId       *int64    `json:"parentId"`
-	ImageId        *int64    `json:"imageId"`
-	Description    string    `json:"description"`
-	Quantity       int64     `json:"quantity"`
-	QuantitySuffix string    `json:"quantitySuffix"`
-	QuantityPrefix string    `json:"quantityPrefix"`
-	UnitPrice      int64     `json:"unitPrice"`
-	UnitSuffix     string    `json:"unitSuffix"`
-	UnitPrefix     string    `json:"unitPrefix"`
-	Amount         *int64    `json:"amount"`
-	AmountSuffix   string    `json:"amountSuffix"`
-	AmountPrefix   string    `json:"amountPrefix"`
-	Open           bool      `json:"open"`
-	Created        time.Time `json:"created"`
-	Updated        time.Time `json:"updated"`
+	Id              int64     `json:"id"`
+	QuoteId         int64     `json:"quoteId"`
+	ParentId        *int64    `json:"parentId"`
+	ImageId         *int64    `json:"imageId"`
+	Description     string    `json:"description"`
+	Quantity        int64     `json:"quantity"`
+	QuantitySuffix  string    `json:"quantitySuffix"`
+	QuantityPrefix  string    `json:"quantityPrefix"`
+	UnitPrice       int64     `json:"unitPrice"`
+	UnitPriceSuffix string    `json:"unitSuffix"`
+	UnitPricePrefix string    `json:"unitPrefix"`
+	Amount          *int64    `json:"amount"`
+	AmountSuffix    string    `json:"amountSuffix"`
+	AmountPrefix    string    `json:"amountPrefix"`
+	Open            bool      `json:"open"`
+	Created         time.Time `json:"created"`
+	Updated         time.Time `json:"updated"`
 }
 
 type Adjustment struct {

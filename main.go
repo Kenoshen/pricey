@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -761,6 +762,13 @@ func depthPadding(v int, paddingPixels, base int) int {
 	return (v * paddingPixels) + base
 }
 
+type item struct {
+	id    int64
+	l     *LineItem
+	fl    *FullLineItem
+	found bool
+}
+
 func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, error) {
 	q := &FullQuote{Id: id}
 	return q, v.store.Transaction(func(ctx context.Context) error {
@@ -768,6 +776,22 @@ func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, e
 		if err != nil {
 			return err
 		}
+		q.Code = quote.Code
+		q.OrderNumber = quote.OrderNumber
+		q.IssueDate = quote.IssueDate
+		q.ExpirationDate = quote.ExpirationDate
+		q.PaymentTerms = quote.PaymentTerms
+		q.Notes = quote.Notes
+		q.PayUrl = quote.PayUrl
+		q.Sent = quote.Sent
+		q.SentOn = quote.SentOn
+		q.Sold = quote.Sold
+		q.SoldOn = quote.SoldOn
+		q.Created = quote.Created
+		q.Updated = quote.Updated
+		q.Hidden = quote.Hidden
+		q.Locked = quote.Locked
+
 		if quote.LogoId >= 0 {
 			imageUrl, err := v.store.GetImageUrl(ctx, quote.LogoId)
 			if err != nil {
@@ -798,7 +822,57 @@ func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, e
 				return err
 			}
 		}
-		// todo: get line items
+
+		var items []*item
+		for _, lineItemId := range quote.LineItemIds {
+			l, fl, err := v.getFullLineItem(ctx, lineItemId)
+			if err != nil {
+				return err
+			}
+			i := &item{l: l, fl: fl, found: false}
+			if l != nil {
+				items = append(items, i)
+				if l.ParentId == nil {
+					q.LineItems = append(q.LineItems, fl)
+					i.found = true
+				}
+			}
+		}
+		infinitLoopSafety := 100
+		allFound := false
+
+		// TODO: this loop will fail if you have the following scenario:
+		/*
+		   A{parent: nil}
+		   C{parent: B}
+		   B{parent: A}
+
+		   This will cause this loop to break on C since B has not been
+		   added and the logic just tries to start again at A instead of
+		   starting at after C.
+
+		   I'm tired. And I can't figure this out right now. Taking a break now.
+		*/
+	outerLoop:
+		for !allFound && infinitLoopSafety > 0 {
+			infinitLoopSafety--
+			for _, item := range items {
+				if item.found || item.l.ParentId == nil {
+					continue
+				}
+				for _, otherItem := range items {
+					if otherItem.id == *item.l.ParentId {
+						otherItem.fl.SubItems = append(otherItem.fl.SubItems, item.fl)
+						break
+					}
+				}
+				// try again because we have an item that is not found
+				continue outerLoop
+			}
+			//
+			break
+		}
+
 		// todo: calculate subTotal
 		// todo: get adjustments
 		// todo: calculate total
@@ -806,6 +880,50 @@ func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, e
 
 		return nil
 	})
+}
+
+func (v *priceyPrint) getFullLineItem(ctx context.Context, id int64) (*LineItem, *FullLineItem, error) {
+	var l *LineItem
+	var fl *FullLineItem
+	var err error
+	l, err = v.store.GetLineItem(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	if l != nil {
+		var i *Image
+		if l.ImageId != nil {
+			url, err := v.store.GetImageUrl(ctx, *l.ImageId)
+			if err != nil {
+				return nil, nil, err
+			}
+			i = &Image{
+				Id:  *l.ImageId,
+				Url: url,
+			}
+		}
+		fl = &FullLineItem{
+			Id:              l.Id,
+			Depth:           0,
+			Image:           i,
+			Description:     l.Description,
+			QuantityPrefix:  l.QuantityPrefix,
+			Quantity:        l.Quantity,
+			QuantitySuffix:  l.QuantitySuffix,
+			UnitPricePrefix: l.UnitPricePrefix,
+			UnitPrice:       l.UnitPrice,
+			UnitPriceSuffix: l.UnitPriceSuffix,
+			AmountPrefix:    l.AmountPrefix,
+			Amount:          0,
+			AmountSuffix:    l.AmountSuffix,
+			Created:         l.Created,
+			Updated:         l.Updated,
+		}
+		if l.Amount != nil {
+			fl.Amount = *l.Amount
+		}
+	}
+	return l, fl, nil
 }
 
 func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
