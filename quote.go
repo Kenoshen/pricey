@@ -114,21 +114,22 @@ type FullQuote struct {
 }
 
 type FullLineItem struct {
-	Id              int64
-	Depth           int
-	Number          string
-	SubItems        []*FullLineItem
-	Image           *Image
-	Description     string
-	Quantity        int64
-	QuantitySuffix  string
-	QuantityPrefix  string
-	UnitPrice       int64
-	UnitPriceSuffix string
-	UnitPricePrefix string
-	Amount          int64
-	AmountSuffix    string
-	AmountPrefix    string
-	Created         time.Time
-	Updated         time.Time
+	Id               int64
+	Depth            int
+	Number           string
+	SubItems         []*FullLineItem
+	Image            *Image
+	Description      string
+	Quantity         int64
+	QuantitySuffix   string
+	QuantityPrefix   string
+	UnitPrice        int64
+	UnitPriceSuffix  string
+	UnitPricePrefix  string
+	AmountOverridden bool
+	Amount           int64
+	AmountSuffix     string
+	AmountPrefix     string
+	Created          time.Time
+	Updated          time.Time
 }
