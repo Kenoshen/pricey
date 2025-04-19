@@ -249,7 +249,7 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 			if a.Type == AdjustmentTypeFlat {
 				q.Total += a.Amount
 			} else if a.Type == AdjustmentTypePercent {
-				q.Total += int64(float64(q.SubTotal) * (float64(a.Amount) / 100.0))
+				q.Total += q.SubTotal * a.Amount / 100
 			}
 		}
 	}
@@ -257,7 +257,7 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 	if quote.BalanceDue != 0 {
 		q.BalanceDue = quote.BalanceDue
 	} else if quote.BalancePercentDue != 0 {
-		q.BalanceDue = int64(float64(q.Total) * (float64(quote.BalancePercentDue) / 100.0))
+		q.BalanceDue = q.Total * quote.BalancePercentDue / 100
 	}
 
 	return q
@@ -291,6 +291,9 @@ func (v *priceyPrint) getFullLineItem(lineItems map[int64]*LineItem, images map[
 		if l.Amount != nil {
 			fl.AmountOverridden = true
 			fl.Amount = *l.Amount
+		} else if l.Quantity > 0 {
+			fl.AmountOverridden = true
+			fl.Amount = l.UnitPrice * l.Quantity / 100
 		}
 	}
 	return l, fl
