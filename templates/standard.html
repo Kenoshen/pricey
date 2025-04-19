@@ -63,8 +63,12 @@
         padding-left: 5px;
       }
       .bg-slate {
-        background-color: #efefef;
-        color: #555;
+        background-color: #ccc;
+        color: #777;
+      }
+      .bg-faded {
+        background-color: #f8f8f8;
+        color: #aaa;
       }
       .hr {
         border-bottom: 1px solid #e0e0e0;
@@ -140,7 +144,9 @@
       <div>
         <table class="textAlignRight" style="border-collapse: collapse;">
           <tr class="hr bg-slate"><td class="pxl py bold">SubTotal</td><td class="pxl">${{pennies .SubTotal}}</td><tr>
-          {{range .Adjustments}}{{template "Adjustment" .}}{{end}}
+          {{range .Adjustments}}<tr class="hr">
+            <td class="pxl py">{{.Description}}{{if eq .Type 1}} ({{.Amount}}%){{end}}</td><td class="pxl py">${{adjustmentAmount . $.SubTotal | pennies}}</td>
+          </tr>{{end}}
           <tr class="hr bg-slate"><td class="pxl py bold">Total</td><td class="pxl">${{pennies .Total}}</td><tr>
           {{if gt .BalanceDue 0}}<tr class="hr"><td class="pxl py bold">{{if ne .BalanceDueOn nil}}({{.BalanceDueOn.Format "1/02/06"}}) {{end}}Balance Due</td><td class="pxl">${{pennies .BalanceDue}}</td><tr>{{end}}
             {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2"><a href="{{.PayUrl}}">Pay Here</a></td><tr>{{end}}
@@ -160,12 +166,9 @@
   {{if ne .Street ""}}<tr><td>{{.Street}}</td></tr>{{end}}
   <tr><td>{{.City}}, {{.State}} {{.Zip}}</td></tr>
 </table>{{end}}{{end}}
-{{ define "LineItem" }}<tr class="hr">
-  <td class="pxl py centerLeftContent" style="gap: 10px; padding-left: {{depthPadding .Depth 20 10}}px">{{if ne .Number ""}}<div class="pr light">{{.Number}}</div>{{end}}{{template "Thumbnail" .Image}}{{.Description}}</td>
+{{ define "LineItem" }}<tr class="hr{{if gt .Depth 0}} bg-faded{{end}}">
+  <td class="pxl py centerLeftContent" style="gap: 10px; padding-left: {{depthPadding .Depth 20 10}}px;">{{if ne .Number ""}}<div class="pr light">{{.Number}}</div>{{end}}{{template "Thumbnail" .Image}}{{.Description}}</td>
   <td class="pxl py textAlignRight">{{.QuantityPrefix}}{{quantity .Quantity}}{{.QuantitySuffix}}</td>
   <td class="pxl py textAlignRight">{{.UnitPricePrefix}}{{pennies .UnitPrice}}{{.UnitPriceSuffix}}</td>
   <td class="pxl py textAlignRight">{{.AmountPrefix}}{{pennies .Amount}}{{.AmountSuffix}}</td>
 </tr>{{range .SubItems}}{{template "LineItem" .}}{{end}}{{end}}
-{{ define "Adjustment" }}<tr class="hr">
-  <td class="pxl py">{{.Description}}</td><td class="pxl py">${{pennies .Amount}}</td>
-</tr>{{end}}

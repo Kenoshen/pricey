@@ -38,9 +38,10 @@ var standardTemplate string
 
 func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
 	funcs := template.FuncMap{
-		"pennies":      pennies,
-		"quantity":     quantity,
-		"depthPadding": depthPadding,
+		"pennies":          pennies,
+		"quantity":         quantity,
+		"depthPadding":     depthPadding,
+		"adjustmentAmount": adjustmentAmount,
 	}
 	standardTemplate, err := template.New("standard").Funcs(funcs).Parse(standardTemplate)
 	if err != nil {
@@ -95,6 +96,19 @@ func quantity(v int64) string {
 
 func depthPadding(v int, paddingPixels, base int) int {
 	return (v * paddingPixels) + base
+}
+
+func adjustmentAmount(a *Adjustment, subTotal int64) int64 {
+	if a == nil {
+		return 0
+	}
+	if a.Type == AdjustmentTypeFlat {
+		return a.Amount
+	}
+	if a.Type == AdjustmentTypePercent {
+		return subTotal * a.Amount / 100
+	}
+	return 0
 }
 
 type item struct {
@@ -233,12 +247,16 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 		if item.l.ParentId != nil {
 			if parent, ok := lookup[*item.l.ParentId]; ok {
 				parent.fl.SubItems = append(parent.fl.SubItems, item.fl)
+				// TODO: this might cause a bug if the items are not added in order?
+				item.fl.Depth = parent.fl.Depth + 1
 			}
 		}
 	}
 
-	for _, item := range q.LineItems {
+	visited := map[int64]bool{}
+	for i, item := range q.LineItems {
 		q.SubTotal += v.findAmount(lookup, item, map[int64]bool{})
+		v.calculateDepthAndNumber("", 0, i, item, visited)
 	}
 
 	q.Total = q.SubTotal
@@ -246,11 +264,7 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 		a := adjustments[adjustmentId]
 		if a != nil {
 			q.Adjustments = append(q.Adjustments, a)
-			if a.Type == AdjustmentTypeFlat {
-				q.Total += a.Amount
-			} else if a.Type == AdjustmentTypePercent {
-				q.Total += q.SubTotal * a.Amount / 100
-			}
+			q.Total += adjustmentAmount(a, q.SubTotal)
 		}
 	}
 
@@ -314,6 +328,23 @@ func (v *priceyPrint) findAmount(lookup map[int64]*item, item *FullLineItem, vis
 		}
 	}
 	return item.Amount
+}
+
+func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *FullLineItem, visited map[int64]bool) {
+	if visited[item.Id] {
+		return
+	}
+	visited[item.Id] = true
+	item.Depth = depth
+	var sb []string
+	if parentNumber != "" {
+		sb = append(sb, parentNumber)
+	}
+	sb = append(sb, strconv.Itoa(index+1))
+	item.Number = strings.Join(sb, ".")
+	for i, subItem := range item.SubItems {
+		v.calculateDepthAndNumber(item.Number, depth+1, i, subItem, visited)
+	}
 }
 
 func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
