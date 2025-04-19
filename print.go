@@ -12,6 +12,7 @@ import (
 
 	gotenberg "github.com/starwalkn/gotenberg-go-client/v8"
 	"github.com/starwalkn/gotenberg-go-client/v8/document"
+	qrsvg "github.com/wamuir/svg-qr-code"
 )
 
 func print(client *gotenberg.Client, htmlDoc io.Reader) (io.ReadCloser, error) {
@@ -42,6 +43,7 @@ func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
 		"quantity":         quantity,
 		"depthPadding":     depthPadding,
 		"adjustmentAmount": adjustmentAmount,
+		"qrcode":           qrcode,
 	}
 	standardTemplate, err := template.New("standard").Funcs(funcs).Parse(standardTemplate)
 	if err != nil {
@@ -109,6 +111,21 @@ func adjustmentAmount(a *Adjustment, subTotal int64) int64 {
 		return subTotal * a.Amount / 100
 	}
 	return 0
+}
+
+func qrcode(url string) template.HTML {
+	qr, err := qrsvg.New(url)
+	if err != nil {
+		fmt.Printf("failed to generate qrcode: %v", err)
+		return ""
+	}
+	if qr == nil {
+		fmt.Printf("qrcode was empty for content: %s", url)
+		return ""
+	}
+	qr.Borderwidth = 0
+	svgObj := qr.SVG()
+	return template.HTML(strings.Replace(qr.SVG().String(), fmt.Sprintf("width=\"%d\" height=\"%d\"", svgObj.Width, svgObj.Height), fmt.Sprintf("viewBox=\"0 0 %d %d\"", svgObj.Width, svgObj.Height), 1))
 }
 
 type item struct {
@@ -198,6 +215,8 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 	q := &FullQuote{Id: quote.Id}
 	q.Code = quote.Code
 	q.OrderNumber = quote.OrderNumber
+	q.PrimaryBackgroundColor = quote.PrimaryBackgroundColor
+	q.PrimaryTextColor = quote.PrimaryTextColor
 	q.IssueDate = quote.IssueDate
 	q.ExpirationDate = quote.ExpirationDate
 	q.PaymentTerms = quote.PaymentTerms

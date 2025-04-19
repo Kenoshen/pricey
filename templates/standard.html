@@ -70,8 +70,15 @@
         background-color: #f8f8f8;
         color: #aaa;
       }
+      .bg-primary {
+        background-color: {{.PrimaryBackgroundColor}};
+        color: {{.PrimaryTextColor}};
+      }
       .hr {
         border-bottom: 1px solid #e0e0e0;
+      }
+      .hrp {
+        border-bottom: 1px solid {{.PrimaryBackgroundColor}};
       }
       .text {
         white-space: pre-wrap;
@@ -103,25 +110,25 @@
     </div>
     <div class="row spaceBetween" style="gap: 20px;">
       {{if ne .BillTo nil}}<div>
-        <h3 class="hr">Bill To</h3>
+        <h3 class="hrp">Bill To</h3>
         {{template "Contact" .BillTo}}
       </div>{{end}}
       {{if ne .ShipTo nil}}<div>
-        <h3 class="hr">Ship To</h3>
+        <h3 class="hrp">Ship To</h3>
         {{template "Contact" .ShipTo}}
       </div>{{end}}
       {{if ne .Sender nil}}<div class="textAlignRight">
-        <h3 class="hr">Sender</h3>
+        <h3 class="hrp">Sender</h3>
         {{template "Contact" .Sender}}
       </div>{{end}}
     </div>
     <table style="margin-top: 10px; width: 100%; border-collapse: collapse;">
       <thead>
-        <tr class="bg-slate hr" style="font-size: 1.2em;">
-          <th class="pxl py" style="width: 100%; text-align: left;">Description</th>
+        <tr class="bg-primary" style="font-size: 1.2em;">
+          <th class="pxl py" style="width: 100%; text-align: left; border-top-left-radius: 3px;; border-bottom-left-radius: 3px;">Description</th>
           <th class="pxl py textAlignRight">Quantity</th>
           <th class="pxl py textAlignRight">Unit&nbspPrice</th>
-          <th class="pxl py textAlignRight">Amount</th>
+          <th class="pxl py textAlignRight" style="border-bottom-right-radius: 3px; border-top-right-radius: 3px;">Amount</th>
         </tr>
       </thead>
       <tbody>
@@ -131,15 +138,13 @@
     <div class="row">
       <div class="" style="flex: 1; padding-right: 20px; padding-top: 20px;">
         {{if ne .PaymentTerms ""}}<div style="margin-bottom: 30px;">
-          <h3 class="hr">Payment Terms</h3>
+          <h3 class="hrp">Payment Terms</h3>
           <p class="text">{{.PaymentTerms}}</p>
         </div>{{end}}
-
         {{if ne .Notes ""}}<div>
-          <h3 class="hr">Notes</h3>
+          <h3 class="hrp">Notes</h3>
           <p class="text">{{.Notes}}</p>
         </div>{{end}}
-
       </div>
       <div>
         <table class="textAlignRight" style="border-collapse: collapse;">
@@ -147,9 +152,9 @@
           {{range .Adjustments}}<tr class="hr">
             <td class="pxl py">{{.Description}}{{if eq .Type 1}} ({{.Amount}}%){{end}}</td><td class="pxl py">${{adjustmentAmount . $.SubTotal | pennies}}</td>
           </tr>{{end}}
-          <tr class="hr bg-slate"><td class="pxl py bold">Total</td><td class="pxl">${{pennies .Total}}</td><tr>
+          <tr class="hr bg-primary"><td class="pxl py bold">Total</td><td class="pxl">${{pennies .Total}}</td><tr>
           {{if gt .BalanceDue 0}}<tr class="hr"><td class="pxl py bold">{{if ne .BalanceDueOn nil}}({{.BalanceDueOn.Format "1/02/06"}}) {{end}}Balance Due</td><td class="pxl">${{pennies .BalanceDue}}</td><tr>{{end}}
-            {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2"><a href="{{.PayUrl}}">Pay Here</a></td><tr>{{end}}
+            {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2" ><div style="text-align: right;"><p><a href="{{.PayUrl}}">Pay Here</a> or scan: </p><div style="margin-top: 10px; max-width: 120px; margin-left: auto;">{{qrcode .PayUrl}}</div></div></td><tr>{{end}}
         </table>
       </div>
     </div>

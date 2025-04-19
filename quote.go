@@ -5,33 +5,35 @@ import (
 )
 
 type Quote struct {
-	Id                int64      `json:"id"`
-	Code              string     `json:"code"`
-	OrderNumber       string     `json:"orderNumber"`
-	LogoId            int64      `json:"logoId"`
-	IssueDate         *time.Time `json:"issueDate"`
-	ExpirationDate    *time.Time `json:"expirationDate"`
-	PaymentTerms      string     `json:"paymentTerms"`
-	Notes             string     `json:"notes"`
-	SenderId          int64      `json:"senderId"`
-	BillToId          int64      `json:"billToId"`
-	ShipToId          int64      `json:"shipToId"`
-	LineItemIds       []int64    `json:"lineItemIds"`
-	SubTotal          int64      `json:"subTotal"`
-	AdjustmentIds     []int64    `json:"adjustmentsIds"`
-	Total             int64      `json:"total"`
-	BalanceDue        int64      `json:"balanceDue"`
-	BalancePercentDue int64      `json:"balancePercentDue"`
-	BalanceDueOn      *time.Time `json:"balanceDueOn"`
-	PayUrl            string     `json:"payUrl"`
-	Sent              bool       `json:"sent"`
-	SentOn            *time.Time `json:"sentOn"`
-	Sold              bool       `json:"sold"`
-	SoldOn            *time.Time `json:"soldOn"`
-	Created           time.Time  `json:"created"`
-	Updated           time.Time  `json:"updated"`
-	Hidden            bool       `json:"hidden"`
-	Locked            bool       `json:"locked"`
+	Id                     int64      `json:"id"`
+	Code                   string     `json:"code"`
+	OrderNumber            string     `json:"orderNumber"`
+	LogoId                 int64      `json:"logoId"`
+	PrimaryBackgroundColor string     `json:"primaryBackgroundColor"`
+	PrimaryTextColor       string     `json:"primaryTextColor"`
+	IssueDate              *time.Time `json:"issueDate"`
+	ExpirationDate         *time.Time `json:"expirationDate"`
+	PaymentTerms           string     `json:"paymentTerms"`
+	Notes                  string     `json:"notes"`
+	SenderId               int64      `json:"senderId"`
+	BillToId               int64      `json:"billToId"`
+	ShipToId               int64      `json:"shipToId"`
+	LineItemIds            []int64    `json:"lineItemIds"`
+	SubTotal               int64      `json:"subTotal"`
+	AdjustmentIds          []int64    `json:"adjustmentsIds"`
+	Total                  int64      `json:"total"`
+	BalanceDue             int64      `json:"balanceDue"`
+	BalancePercentDue      int64      `json:"balancePercentDue"`
+	BalanceDueOn           *time.Time `json:"balanceDueOn"`
+	PayUrl                 string     `json:"payUrl"`
+	Sent                   bool       `json:"sent"`
+	SentOn                 *time.Time `json:"sentOn"`
+	Sold                   bool       `json:"sold"`
+	SoldOn                 *time.Time `json:"soldOn"`
+	Created                time.Time  `json:"created"`
+	Updated                time.Time  `json:"updated"`
+	Hidden                 bool       `json:"hidden"`
+	Locked                 bool       `json:"locked"`
 }
 
 type LineItem struct {
@@ -85,32 +87,34 @@ type Contact struct {
 }
 
 type FullQuote struct {
-	Id             int64
-	Code           string
-	OrderNumber    string
-	Logo           *Image
-	IssueDate      *time.Time
-	ExpirationDate *time.Time
-	PaymentTerms   string
-	Notes          string
-	Sender         *Contact
-	BillTo         *Contact
-	ShipTo         *Contact
-	LineItems      []*FullLineItem
-	SubTotal       int64
-	Adjustments    []*Adjustment
-	Total          int64
-	BalanceDue     int64
-	BalanceDueOn   *time.Time
-	PayUrl         string
-	Sent           bool
-	SentOn         *time.Time
-	Sold           bool
-	SoldOn         *time.Time
-	Created        time.Time
-	Updated        time.Time
-	Hidden         bool
-	Locked         bool
+	Id                     int64
+	Code                   string
+	OrderNumber            string
+	Logo                   *Image
+	PrimaryBackgroundColor string
+	PrimaryTextColor       string
+	IssueDate              *time.Time
+	ExpirationDate         *time.Time
+	PaymentTerms           string
+	Notes                  string
+	Sender                 *Contact
+	BillTo                 *Contact
+	ShipTo                 *Contact
+	LineItems              []*FullLineItem
+	SubTotal               int64
+	Adjustments            []*Adjustment
+	Total                  int64
+	BalanceDue             int64
+	BalanceDueOn           *time.Time
+	PayUrl                 string
+	Sent                   bool
+	SentOn                 *time.Time
+	Sold                   bool
+	SoldOn                 *time.Time
+	Created                time.Time
+	Updated                time.Time
+	Hidden                 bool
+	Locked                 bool
 }
 
 type FullLineItem struct {
