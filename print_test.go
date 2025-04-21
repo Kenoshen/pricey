@@ -33,7 +33,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 		SenderId:               1,
 		BillToId:               2,
 		ShipToId:               3,
-		LineItemIds:            []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		LineItemIds:            []int64{2, 1, 3, 4, 5, 6, 7, 8, 9, 10},
 		SubTotal:               0,
 		AdjustmentIds:          []int64{1, 2, 3},
 		Total:                  0,
