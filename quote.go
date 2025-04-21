@@ -40,6 +40,7 @@ type LineItem struct {
 	Id              int64     `json:"id"`
 	QuoteId         int64     `json:"quoteId"`
 	ParentId        *int64    `json:"parentId"`
+	SubItemIds      []int64   `json:"subItemIds"`
 	ImageId         *int64    `json:"imageId"`
 	Description     string    `json:"description"`
 	Quantity        int64     `json:"quantity"`
@@ -86,7 +87,7 @@ type Contact struct {
 	Zip         string
 }
 
-type FullQuote struct {
+type PrintableQuote struct {
 	Id                     int64
 	Code                   string
 	OrderNumber            string
@@ -100,7 +101,7 @@ type FullQuote struct {
 	Sender                 *Contact
 	BillTo                 *Contact
 	ShipTo                 *Contact
-	LineItems              []*FullLineItem
+	LineItems              []*PrintableLineItem
 	SubTotal               int64
 	Adjustments            []*Adjustment
 	Total                  int64
@@ -117,11 +118,11 @@ type FullQuote struct {
 	Locked                 bool
 }
 
-type FullLineItem struct {
+type PrintableLineItem struct {
 	Id               int64
 	Depth            int
 	Number           string
-	SubItems         []*FullLineItem
+	SubItems         []*PrintableLineItem
 	Image            *Image
 	Description      string
 	Quantity         int64

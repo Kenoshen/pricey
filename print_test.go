@@ -11,7 +11,7 @@ import (
 	gotenberg "github.com/starwalkn/gotenberg-go-client/v8"
 )
 
-func TestQuoteToFullQuote(t *testing.T) {
+func TestQuoteToPrintableQuote(t *testing.T) {
 	m := func(tm time.Time) *time.Time {
 		return &tm
 	}
@@ -33,9 +33,9 @@ func TestQuoteToFullQuote(t *testing.T) {
 		SenderId:               1,
 		BillToId:               2,
 		ShipToId:               3,
-		LineItemIds:            []int64{1, 2, 3, 4, 5, 6},
+		LineItemIds:            []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 		SubTotal:               0,
-		AdjustmentIds:          []int64{1, 2},
+		AdjustmentIds:          []int64{1, 2, 3},
 		Total:                  0,
 		BalancePercentDue:      50,
 		BalanceDueOn:           m(now.Add(10 * 24 * time.Hour)),
@@ -98,6 +98,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 			Id:           2,
 			Description:  "Shipping and Handling",
 			AmountPrefix: "$",
+			SubItemIds:   []int64{3},
 		},
 		3: {
 			Id:           3,
@@ -110,6 +111,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 			Id:           4,
 			Description:  "Replace Old Water Heater",
 			AmountPrefix: "$",
+			SubItemIds:   []int64{6, 5},
 		},
 		5: {
 			Id:              5,
@@ -130,6 +132,18 @@ func TestQuoteToFullQuote(t *testing.T) {
 			AmountPrefix: "$",
 			Amount:       i(80000),
 		},
+		7: {
+			Id:           7,
+			Description:  "Water Heater",
+			AmountPrefix: "$",
+			Amount:       i(80000),
+		},
+		18: {
+			Id:           8,
+			Description:  "Water Heater",
+			AmountPrefix: "$",
+			Amount:       i(80000),
+		},
 	}
 	adjustments := map[int64]*Adjustment{
 		1: {
@@ -142,9 +156,14 @@ func TestQuoteToFullQuote(t *testing.T) {
 			Type:        AdjustmentTypeFlat,
 			Amount:      5000,
 		},
+		3: {
+			Description: "Invisible Fee",
+			Type:        AdjustmentTypePercent,
+			Amount:      0,
+		},
 	}
 
-	qExpected := &FullQuote{
+	qExpected := &PrintableQuote{
 		Id:          64,
 		Code:        "INV-001",
 		OrderNumber: "O#0012345",
@@ -182,7 +201,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 			State:  "Arizona",
 			Zip:    "87654",
 		},
-		LineItems: []*FullLineItem{{
+		LineItems: []*PrintableLineItem{{
 			Number: "1",
 			Depth:  0,
 			Image: &Image{
@@ -200,7 +219,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 			Description:  "Shipping and Handling",
 			AmountPrefix: "$",
 			Amount:       1000,
-			SubItems: []*FullLineItem{{
+			SubItems: []*PrintableLineItem{{
 				Number:       "2.1",
 				Depth:        1,
 				Description:  "Shipping",
@@ -213,7 +232,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 			Description:  "Replace Old Water Heater",
 			AmountPrefix: "$",
 			Amount:       160000,
-			SubItems: []*FullLineItem{{
+			SubItems: []*PrintableLineItem{{
 				Number:          "3.1",
 				Depth:           1,
 				Quantity:        2000,
@@ -257,7 +276,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 		return
 	}
 	p := newPrinter(nil, client)
-	qActual := p.getFullQuote(quote, images, contacts, lineItems, adjustments)
+	qActual := p.getPrintableQuote(quote, images, contacts, lineItems, adjustments)
 
 	os.MkdirAll("tmp", os.ModePerm)
 	pdfExpected, err := os.Create("tmp/test_expected.pdf")
@@ -333,7 +352,7 @@ func TestQuoteToFullQuote(t *testing.T) {
 	}
 }
 
-func TestFullQuotePDF(t *testing.T) {
+func TestPrintableQuotePDF(t *testing.T) {
 	os.MkdirAll("tmp", os.ModePerm)
 	pdf, err := os.Create("tmp/test_standard_template.pdf")
 	if err != nil {
@@ -359,7 +378,7 @@ func TestFullQuotePDF(t *testing.T) {
 		return &tm
 	}
 	now := time.Now()
-	err = tmp.Execute(&buf, &FullQuote{
+	err = tmp.Execute(&buf, &PrintableQuote{
 		Id:          64,
 		Code:        "INV-001",
 		OrderNumber: "O#0012345",
@@ -397,7 +416,7 @@ func TestFullQuotePDF(t *testing.T) {
 			State:  "Arizona",
 			Zip:    "87654",
 		},
-		LineItems: []*FullLineItem{{
+		LineItems: []*PrintableLineItem{{
 			Number: "1)",
 			Depth:  0,
 			Image: &Image{
@@ -412,7 +431,7 @@ func TestFullQuotePDF(t *testing.T) {
 		}, {
 			Number: "2)",
 			Depth:  0,
-			SubItems: []*FullLineItem{{
+			SubItems: []*PrintableLineItem{{
 				Number:       "2.1)",
 				Depth:        1,
 				Description:  "Shipping",
@@ -426,7 +445,7 @@ func TestFullQuotePDF(t *testing.T) {
 		}, {
 			Number: "3)",
 			Depth:  0,
-			SubItems: []*FullLineItem{{
+			SubItems: []*PrintableLineItem{{
 				Number:          "3.1)",
 				Depth:           1,
 				Quantity:        2000,

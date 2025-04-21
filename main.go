@@ -591,8 +591,8 @@ func (v *priceyLineItem) Get(ctx context.Context, id int64) (*LineItem, error) {
 	return v.store.GetLineItem(ctx, id)
 }
 
-func (v *priceyLineItem) Move(ctx context.Context, id int64, parentId *int64) (*LineItem, error) {
-	return v.store.MoveLineItem(ctx, id, parentId)
+func (v *priceyLineItem) Move(ctx context.Context, id int64, parentId *int64, index *int64) (*LineItem, error) {
+	return v.store.MoveLineItem(ctx, id, parentId, index)
 }
 
 func (v *priceyLineItem) SetImage(ctx context.Context, id int64, imageId *int64) (*LineItem, error) {

@@ -16,11 +16,17 @@ import (
 )
 
 func print(client *gotenberg.Client, htmlDoc io.Reader) (io.ReadCloser, error) {
-	index, err := document.FromReader("quote", htmlDoc)
+	index, err := document.FromReader("index", htmlDoc)
+	if err != nil {
+		return nil, err
+	}
+	footer, err := document.FromString("footer", footerTemplate)
 	if err != nil {
 		return nil, err
 	}
 	req := gotenberg.NewHTMLRequest(index)
+	req.Footer(footer)
+
 	resp, err := client.Send(context.Background(), req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send: %w", err)
@@ -36,6 +42,9 @@ type priceyPrint struct {
 
 //go:embed templates/standard.html
 var standardTemplate string
+
+//go:embed templates/footer.html
+var footerTemplate string
 
 func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
 	funcs := template.FuncMap{
@@ -131,12 +140,12 @@ func qrcode(url string) template.HTML {
 type item struct {
 	id    int64
 	l     *LineItem
-	fl    *FullLineItem
+	fl    *PrintableLineItem
 	found bool
 }
 
-func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, error) {
-	fullQuote := &FullQuote{}
+func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int64) (*PrintableQuote, error) {
+	fullQuote := &PrintableQuote{}
 	return fullQuote, v.store.Transaction(func(ctx context.Context) error {
 		quote, err := v.store.GetQuote(ctx, id)
 		if err != nil {
@@ -205,14 +214,14 @@ func (v *priceyPrint) GetFullQuote(ctx context.Context, id int64) (*FullQuote, e
 			adjustments[adjustmentId] = adjustment
 		}
 
-		fullQuote = v.getFullQuote(quote, images, contacts, lineItems, adjustments)
+		fullQuote = v.getPrintableQuote(quote, images, contacts, lineItems, adjustments)
 
 		return nil
 	})
 }
 
-func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contacts map[int64]*Contact, lineItems map[int64]*LineItem, adjustments map[int64]*Adjustment) *FullQuote {
-	q := &FullQuote{Id: quote.Id}
+func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int64]*Image, contacts map[int64]*Contact, lineItems map[int64]*LineItem, adjustments map[int64]*Adjustment) *PrintableQuote {
+	q := &PrintableQuote{Id: quote.Id}
 	q.Code = quote.Code
 	q.OrderNumber = quote.OrderNumber
 	q.PrimaryBackgroundColor = quote.PrimaryBackgroundColor
@@ -248,7 +257,7 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 	var items []*item
 	lookup := map[int64]*item{}
 	for _, lineItemId := range quote.LineItemIds {
-		l, fl := v.getFullLineItem(lineItems, images, lineItemId)
+		l, fl := v.getPrintableLineItem(lineItems, images, lineItemId)
 		i := &item{l: l, fl: fl, found: false}
 		lookup[lineItemId] = i
 		if l != nil {
@@ -263,11 +272,9 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 	}
 
 	for _, item := range items {
-		if item.l.ParentId != nil {
-			if parent, ok := lookup[*item.l.ParentId]; ok {
-				parent.fl.SubItems = append(parent.fl.SubItems, item.fl)
-				// TODO: this might cause a bug if the items are not added in order?
-				item.fl.Depth = parent.fl.Depth + 1
+		for _, subItemId := range item.l.SubItemIds {
+			if subItem, ok := lookup[subItemId]; ok && subItem != nil && subItem.l.ParentId != nil && *subItem.l.ParentId == item.l.Id {
+				item.fl.SubItems = append(item.fl.SubItems, subItem.fl)
 			}
 		}
 	}
@@ -296,15 +303,15 @@ func (v *priceyPrint) getFullQuote(quote *Quote, images map[int64]*Image, contac
 	return q
 }
 
-func (v *priceyPrint) getFullLineItem(lineItems map[int64]*LineItem, images map[int64]*Image, id int64) (*LineItem, *FullLineItem) {
+func (v *priceyPrint) getPrintableLineItem(lineItems map[int64]*LineItem, images map[int64]*Image, id int64) (*LineItem, *PrintableLineItem) {
 	l := lineItems[id]
-	var fl *FullLineItem
+	var fl *PrintableLineItem
 	if l != nil {
 		var i *Image
 		if l.ImageId != nil {
 			i = images[*l.ImageId]
 		}
-		fl = &FullLineItem{
+		fl = &PrintableLineItem{
 			Id:              l.Id,
 			Depth:           0,
 			Image:           i,
@@ -332,7 +339,7 @@ func (v *priceyPrint) getFullLineItem(lineItems map[int64]*LineItem, images map[
 	return l, fl
 }
 
-func (v *priceyPrint) findAmount(lookup map[int64]*item, item *FullLineItem, visited map[int64]bool) int64 {
+func (v *priceyPrint) findAmount(lookup map[int64]*item, item *PrintableLineItem, visited map[int64]bool) int64 {
 	visited[item.Id] = true
 	i := lookup[item.Id]
 	if i == nil {
@@ -349,7 +356,7 @@ func (v *priceyPrint) findAmount(lookup map[int64]*item, item *FullLineItem, vis
 	return item.Amount
 }
 
-func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *FullLineItem, visited map[int64]bool) {
+func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *PrintableLineItem, visited map[int64]bool) {
 	if visited[item.Id] {
 		return
 	}
@@ -367,7 +374,7 @@ func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index 
 }
 
 func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
-	q, err := v.GetFullQuote(ctx, id)
+	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -389,7 +396,7 @@ func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error
 }
 
 func (v *priceyPrint) StandardHTML(ctx context.Context, id int64, w io.Writer) error {
-	q, err := v.GetFullQuote(ctx, id)
+	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err
 	}

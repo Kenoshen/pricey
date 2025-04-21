@@ -149,7 +149,7 @@ type Store interface {
 	CreateSubLineItem(ctx context.Context, quoteId, parentId int64, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error)
 	CreateDuplicateLineItem(ctx context.Context, id int64) (*LineItem, error)
 	GetLineItem(ctx context.Context, id int64) (*LineItem, error)
-	MoveLineItem(ctx context.Context, id int64, parentId *int64) (*LineItem, error)
+	MoveLineItem(ctx context.Context, id int64, parentId *int64, index *int64) (*LineItem, error)
 	UpdateLineItemImage(ctx context.Context, id int64, imageId *int64) (*LineItem, error)
 	UpdateLineItemDescription(ctx context.Context, id int64, description string) (*LineItem, error)
 	UpdateLineItemQuantity(ctx context.Context, id int64, quantity float64, prefix, suffix string) (*LineItem, error)

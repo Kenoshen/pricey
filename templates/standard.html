@@ -92,6 +92,9 @@
       hr {
         color: #e0e0e0;
       }
+      .pagebreak {
+        break-inside: avoid;
+      }
     </style>
   </head>
   <body>
@@ -135,7 +138,7 @@
         {{range .LineItems}}{{template "LineItem" .}}{{end}}
       </tbody>
     </table>
-    <div class="row">
+    <div class="row pagebreak">
       <div class="" style="flex: 1; padding-right: 20px; padding-top: 20px;">
         {{if ne .PaymentTerms ""}}<div style="margin-bottom: 30px;">
           <h3 class="hrp">Payment Terms</h3>
@@ -148,13 +151,13 @@
       </div>
       <div>
         <table class="textAlignRight" style="border-collapse: collapse;">
-          <tr class="hr bg-slate"><td class="pxl py bold">SubTotal</td><td class="pxl">${{pennies .SubTotal}}</td><tr>
+          {{if gt (len .Adjustments) 0}}<tr class="hr bg-slate"><td class="pxl py bold">SubTotal</td><td class="pxl">{{if ne .SubTotal 0}}${{pennies .SubTotal}}{{end}}</td><tr>{{end}}
           {{range .Adjustments}}<tr class="hr">
-            <td class="pxl py">{{.Description}}{{if eq .Type 1}} ({{.Amount}}%){{end}}</td><td class="pxl py">${{adjustmentAmount . $.SubTotal | pennies}}</td>
+            <td class="pxl py">{{.Description}}{{if eq .Type 1}} ({{.Amount}}%){{end}}</td><td class="pxl py">{{if ne (adjustmentAmount . $.SubTotal) 0}}${{adjustmentAmount . $.SubTotal | pennies}}{{end}}</td>
           </tr>{{end}}
-          <tr class="hr bg-primary"><td class="pxl py bold">Total</td><td class="pxl">${{pennies .Total}}</td><tr>
-          {{if gt .BalanceDue 0}}<tr class="hr"><td class="pxl py bold">{{if ne .BalanceDueOn nil}}({{.BalanceDueOn.Format "1/02/06"}}) {{end}}Balance Due</td><td class="pxl">${{pennies .BalanceDue}}</td><tr>{{end}}
-            {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2" ><div style="text-align: right;"><p><a href="{{.PayUrl}}">Pay Here</a> or scan: </p><div style="margin-top: 10px; max-width: 120px; margin-left: auto;">{{qrcode .PayUrl}}</div></div></td><tr>{{end}}
+          <tr class="hr bg-primary"><td class="pxl py bold">Total</td><td class="pxl">{{if ne .Total 0}}${{pennies .Total}}{{end}}</td><tr>
+          {{if ne .BalanceDue 0}}<tr class="hr"><td class="pxl py bold">{{if ne .BalanceDueOn nil}}({{.BalanceDueOn.Format "1/2/06"}}) {{end}}Balance Due</td><td class="pxl">${{pennies .BalanceDue}}</td><tr>{{end}}
+            {{if ne .PayUrl ""}}<tr class=""><td class="pxl py" colspan="2" ><div class="" style="padding: 0; margin: 0; display: flex; flex-direction: row; justify-content: end; align-items: start; gap: 10px;"><p style="text-align: right;"><a href="{{.PayUrl}}">Pay Here</a> or scan: </p><div class="" style="width: 80px;">{{qrcode .PayUrl}}</div></div></td><tr>{{end}}
         </table>
       </div>
     </div>
@@ -173,7 +176,7 @@
 </table>{{end}}{{end}}
 {{ define "LineItem" }}<tr class="hr{{if gt .Depth 0}} bg-faded{{end}}">
   <td class="pxl py centerLeftContent" style="gap: 10px; padding-left: {{depthPadding .Depth 20 10}}px;">{{if ne .Number ""}}<div class="pr light">{{.Number}}</div>{{end}}{{template "Thumbnail" .Image}}{{.Description}}</td>
-  <td class="pxl py textAlignRight">{{.QuantityPrefix}}{{quantity .Quantity}}{{.QuantitySuffix}}</td>
-  <td class="pxl py textAlignRight">{{.UnitPricePrefix}}{{pennies .UnitPrice}}{{.UnitPriceSuffix}}</td>
-  <td class="pxl py textAlignRight">{{.AmountPrefix}}{{pennies .Amount}}{{.AmountSuffix}}</td>
+  <td class="pxl py textAlignRight">{{if ne .Quantity 0}}{{.QuantityPrefix}}{{quantity .Quantity}}{{.QuantitySuffix}}{{end}}</td>
+  <td class="pxl py textAlignRight">{{if ne .UnitPrice 0}}{{.UnitPricePrefix}}{{pennies .UnitPrice}}{{.UnitPriceSuffix}}{{end}}</td>
+  <td class="pxl py textAlignRight">{{if ne .Amount 0}}{{.AmountPrefix}}{{pennies .Amount}}{{.AmountSuffix}}{{end}}</td>
 </tr>{{range .SubItems}}{{template "LineItem" .}}{{end}}{{end}}
