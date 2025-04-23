@@ -42,7 +42,7 @@ type Store interface {
 	GetItemsInCategory(ctx context.Context, categoryId int) ([]*Item, error)
 	MoveItem(ctx context.Context, id int, newCategoryId int) (*Item, error)
 	UpdateItemInfo(ctx context.Context, id int, code, sku, name, description string) (*Item, error)
-	UpdateItemCost(ctx context.Context, id int, cost float64) (*Item, error)
+	UpdateItemCost(ctx context.Context, id int, cost int) (*Item, error)
 	AddItemPrice(ctx context.Context, id int, priceId int) (*Item, error)
 	RemoveItemPrice(ctx context.Context, id int, priceId int) (*Item, error)
 	AddItemTag(ctx context.Context, id int, tagId int) (*Item, error)
@@ -70,7 +70,7 @@ type Store interface {
 	// PRICE
 	// ////////////
 
-	CreatePrice(ctx context.Context, itemId int, amount float64) (*Price, error)
+	CreatePrice(ctx context.Context, itemId int, amount int) (*Price, error)
 	GetPrice(ctx context.Context, id int) (*Price, error)
 	GetPricesByItem(ctx context.Context, itemId int) ([]*Price, error)
 	MovePricesByItem(ctx context.Context, itemId, categoryId int) error
@@ -123,10 +123,10 @@ type Store interface {
 	UpdateQuoteSenderId(ctx context.Context, id int, contactId int) (*Quote, error)
 	UpdateQuoteBillToId(ctx context.Context, id int, contactId int) (*Quote, error)
 	UpdateQuoteShipToId(ctx context.Context, id int, contactId int) (*Quote, error)
-	UpdateQuoteSubTotal(ctx context.Context, id int, subTotal float64) (*Quote, error)
-	UpdateQuoteTotal(ctx context.Context, id int, total float64) (*Quote, error)
-	UpdateQuoteBalanceDue(ctx context.Context, id int, balanceDue float64) (*Quote, error)
-	UpdateQuoteBalancePercentDue(ctx context.Context, id int, balancePercentDue float64) (*Quote, error)
+	UpdateQuoteSubTotal(ctx context.Context, id int, subTotal int) (*Quote, error)
+	UpdateQuoteTotal(ctx context.Context, id int, total int) (*Quote, error)
+	UpdateQuoteBalanceDue(ctx context.Context, id int, balanceDue int) (*Quote, error)
+	UpdateQuoteBalancePercentDue(ctx context.Context, id int, balancePercentDue int) (*Quote, error)
 	UpdateQuoteBalanceDueOn(ctx context.Context, id int, balanceDueOn *time.Time) (*Quote, error)
 	UpdateQuotePayUrl(ctx context.Context, id int, payUrl string) (*Quote, error)
 	UpdateQuoteSent(ctx context.Context, id int, sent bool) (*Quote, error)
@@ -145,16 +145,16 @@ type Store interface {
 	// LINE ITEM
 	// ////////////
 
-	CreateLineItem(ctx context.Context, quoteId int, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error)
-	CreateSubLineItem(ctx context.Context, quoteId, parentId int, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error)
+	CreateLineItem(ctx context.Context, quoteId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error)
+	CreateSubLineItem(ctx context.Context, quoteId, parentId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error)
 	CreateDuplicateLineItem(ctx context.Context, id int) (*LineItem, error)
 	GetLineItem(ctx context.Context, id int) (*LineItem, error)
 	MoveLineItem(ctx context.Context, id int, parentId *int, index *int) (*LineItem, error)
 	UpdateLineItemImage(ctx context.Context, id int, imageId *int) (*LineItem, error)
 	UpdateLineItemDescription(ctx context.Context, id int, description string) (*LineItem, error)
-	UpdateLineItemQuantity(ctx context.Context, id int, quantity float64, prefix, suffix string) (*LineItem, error)
-	UpdateLineItemUnitPrice(ctx context.Context, id int, unitPrice float64, prefix, suffix string) (*LineItem, error)
-	UpdateLineItemAmount(ctx context.Context, id int, amount *float64, prefix, suffix string) (*LineItem, error)
+	UpdateLineItemQuantity(ctx context.Context, id int, quantity int, prefix, suffix string) (*LineItem, error)
+	UpdateLineItemUnitPrice(ctx context.Context, id int, unitPrice int, prefix, suffix string) (*LineItem, error)
+	UpdateLineItemAmount(ctx context.Context, id int, amount *int, prefix, suffix string) (*LineItem, error)
 	UpdateLineItemOpen(ctx context.Context, id int, open bool) (*LineItem, error)
 	DeleteLineItem(ctx context.Context, id int) error
 
@@ -162,9 +162,9 @@ type Store interface {
 	// ADJUSTMENT
 	// ////////////
 
-	CreateAdjustment(ctx context.Context, quoteId int, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error)
+	CreateAdjustment(ctx context.Context, quoteId int, description string, amount int, adjustmentType AdjustmentType) (*Adjustment, error)
 	GetAdjustment(ctx context.Context, id int) (*Adjustment, error)
-	UpdateAdjustment(ctx context.Context, id int, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error)
+	UpdateAdjustment(ctx context.Context, id int, description string, amount int, adjustmentType AdjustmentType) (*Adjustment, error)
 	RemoveAdjustment(ctx context.Context, id int) error
 
 	// ////////////

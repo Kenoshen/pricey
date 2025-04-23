@@ -220,7 +220,7 @@ func (v *priceyItem) SetInfo(ctx context.Context, id int, code, sku, name, descr
 	return v.store.UpdateItemInfo(ctx, id, code, sku, name, description)
 }
 
-func (v *priceyItem) SetCost(ctx context.Context, id int, cost float64) (*Item, error) {
+func (v *priceyItem) SetCost(ctx context.Context, id int, cost int) (*Item, error) {
 	return v.store.UpdateItemCost(ctx, id, cost)
 }
 
@@ -304,7 +304,7 @@ type priceyPrice struct {
 	store Store
 }
 
-func (v *priceyPrice) New(ctx context.Context, itemId int, amount float64) (*Price, error) {
+func (v *priceyPrice) New(ctx context.Context, itemId int, amount int) (*Price, error) {
 	return v.store.CreatePrice(ctx, itemId, amount)
 }
 
@@ -456,19 +456,19 @@ func (v *priceyQuote) SetShipToId(ctx context.Context, id int, contactId int) (*
 	return v.store.UpdateQuoteShipToId(ctx, id, contactId)
 }
 
-func (v *priceyQuote) SetSubTotal(ctx context.Context, id int, subTotal float64) (*Quote, error) {
+func (v *priceyQuote) SetSubTotal(ctx context.Context, id int, subTotal int) (*Quote, error) {
 	return v.store.UpdateQuoteSubTotal(ctx, id, subTotal)
 }
 
-func (v *priceyQuote) SetTotal(ctx context.Context, id int, total float64) (*Quote, error) {
+func (v *priceyQuote) SetTotal(ctx context.Context, id int, total int) (*Quote, error) {
 	return v.store.UpdateQuoteTotal(ctx, id, total)
 }
 
-func (v *priceyQuote) SetBalanceDue(ctx context.Context, id int, balanceDue float64) (*Quote, error) {
+func (v *priceyQuote) SetBalanceDue(ctx context.Context, id int, balanceDue int) (*Quote, error) {
 	return v.store.UpdateQuoteBalanceDue(ctx, id, balanceDue)
 }
 
-func (v *priceyQuote) SetBalancePercentDue(ctx context.Context, id int, balancePercentDue float64) (*Quote, error) {
+func (v *priceyQuote) SetBalancePercentDue(ctx context.Context, id int, balancePercentDue int) (*Quote, error) {
 	return v.store.UpdateQuoteBalancePercentDue(ctx, id, balancePercentDue)
 }
 
@@ -530,7 +530,7 @@ type priceyLineItem struct {
 	store Store
 }
 
-func (v *priceyLineItem) New(ctx context.Context, quoteId int, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
+func (v *priceyLineItem) New(ctx context.Context, quoteId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error) {
 	var item *LineItem
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -549,7 +549,7 @@ func (v *priceyLineItem) New(ctx context.Context, quoteId int, description strin
 	})
 }
 
-func (v *priceyLineItem) NewSub(ctx context.Context, quoteId, parentId int, description string, quantity, unitPrice float64, amount *float64) (*LineItem, error) {
+func (v *priceyLineItem) NewSub(ctx context.Context, quoteId, parentId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error) {
 	var item *LineItem
 	return item, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -603,15 +603,15 @@ func (v *priceyLineItem) SetDescription(ctx context.Context, id int, description
 	return v.store.UpdateLineItemDescription(ctx, id, description)
 }
 
-func (v *priceyLineItem) SetQuantity(ctx context.Context, id int, quantity float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetQuantity(ctx context.Context, id int, quantity int, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemQuantity(ctx, id, quantity, prefix, suffix)
 }
 
-func (v *priceyLineItem) SetUnitPrice(ctx context.Context, id int, unitPrice float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetUnitPrice(ctx context.Context, id int, unitPrice int, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemUnitPrice(ctx, id, unitPrice, prefix, suffix)
 }
 
-func (v *priceyLineItem) SetAmount(ctx context.Context, id int, amount *float64, prefix, suffix string) (*LineItem, error) {
+func (v *priceyLineItem) SetAmount(ctx context.Context, id int, amount *int, prefix, suffix string) (*LineItem, error) {
 	return v.store.UpdateLineItemAmount(ctx, id, amount, prefix, suffix)
 }
 
@@ -627,7 +627,7 @@ type priceyAdjustment struct {
 	store Store
 }
 
-func (v *priceyAdjustment) New(ctx context.Context, quoteId int, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
+func (v *priceyAdjustment) New(ctx context.Context, quoteId int, description string, amount int, adjustmentType AdjustmentType) (*Adjustment, error) {
 	var a *Adjustment
 	return a, v.store.Transaction(func(ctx context.Context) error {
 		var err error
@@ -649,7 +649,7 @@ func (v *priceyAdjustment) Get(ctx context.Context, id int) (*Adjustment, error)
 	return v.store.GetAdjustment(ctx, id)
 }
 
-func (v *priceyAdjustment) Update(ctx context.Context, id int, description string, amount float64, adjustmentType AdjustmentType) (*Adjustment, error) {
+func (v *priceyAdjustment) Update(ctx context.Context, id int, description string, amount int, adjustmentType AdjustmentType) (*Adjustment, error) {
 	return v.store.UpdateAdjustment(ctx, id, description, amount, adjustmentType)
 }
 

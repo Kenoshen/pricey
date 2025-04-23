@@ -39,7 +39,7 @@ type Item struct {
 	SKU              string
 	Name             string
 	Description      string
-	Cost             float64
+	Cost             int
 	PriceIds         []int
 	TagIds           []int
 	HideFromCustomer bool
@@ -60,7 +60,7 @@ type SubItem struct {
 	SubItemId   int
 	ItemId      int
 	PricebookId int
-	Quantity    float64
+	Quantity    int
 }
 
 type Image struct {
@@ -90,7 +90,7 @@ type Price struct {
 	PricebookId int
 	Name        string
 	Description string
-	Amount      float64
+	Amount      int
 	Prefix      string
 	Suffix      string
 	Created     time.Time
