@@ -5,67 +5,67 @@ import (
 )
 
 type Pricebook struct {
-	Id          int64
+	Id          int
 	Name        string
 	Description string
-	ImageId     int64
-	ThumbnailId int64
+	ImageId     int
+	ThumbnailId int
 	Created     time.Time
 	Updated     time.Time
 	Hidden      bool
 }
 
 type Category struct {
-	Id               int64
-	ParentId         *int64
-	PricebookId      int64
+	Id               int
+	ParentId         *int
+	PricebookId      int
 	Name             string
 	Description      string
 	HideFromCustomer bool
-	ImageId          int64
-	ThumbnailId      int64
+	ImageId          int
+	ThumbnailId      int
 	Created          time.Time
 	Updated          time.Time
 	Hidden           bool
 }
 
 type Item struct {
-	Id               int64
-	PricebookId      int64
-	CategoryId       int64
-	ParentIds        []int64
-	SubItemIds       []int64
+	Id               int
+	PricebookId      int
+	CategoryId       int
+	ParentIds        []int
+	SubItemIds       []int
 	Code             string
 	SKU              string
 	Name             string
 	Description      string
 	Cost             float64
-	PriceIds         []int64
-	TagIds           []int64
+	PriceIds         []int
+	TagIds           []int
 	HideFromCustomer bool
-	ImageId          int64
-	ThumbnailId      int64
+	ImageId          int
+	ThumbnailId      int
 	Created          time.Time
 	Updated          time.Time
 	Hidden           bool
 }
 
 type SimpleItem struct {
-	Id          int64
+	Id          int
 	Name        string
-	ThumbnailId int64
+	ThumbnailId int
 }
 
 type SubItem struct {
-	SubItemId   int64
-	ItemId      int64
-	PricebookId int64
+	SubItemId   int
+	ItemId      int
+	PricebookId int
 	Quantity    float64
 }
 
 type Image struct {
-	Id          int64
-	PricebookId int64
+	Id          int
+	PricebookId int
 	Data        []byte
 	Base64      string
 	Url         string
@@ -74,8 +74,8 @@ type Image struct {
 }
 
 type Tag struct {
-	Id          int64
-	PricebookId int64
+	Id          int
+	PricebookId int
 	Name        string
 	Description string
 	Created     time.Time
@@ -84,10 +84,10 @@ type Tag struct {
 }
 
 type Price struct {
-	Id          int64
-	ItemId      int64
-	CategoryId  int64
-	PricebookId int64
+	Id          int
+	ItemId      int
+	CategoryId  int
+	PricebookId int
 	Name        string
 	Description string
 	Amount      float64

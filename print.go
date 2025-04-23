@@ -66,7 +66,7 @@ func newPrinter(store Store, pdfClient *gotenberg.Client) *priceyPrint {
 	}
 }
 
-func pennies(v int64) string {
+func pennies(v int) string {
 	if v == 0 {
 		return ""
 	}
@@ -91,7 +91,7 @@ func pennies(v int64) string {
 	return fmt.Sprintf("%s.%02d", sb.String(), pens)
 }
 
-func quantity(v int64) string {
+func quantity(v int) string {
 	if v == 0 {
 		return ""
 	}
@@ -109,7 +109,7 @@ func depthPadding(v int, paddingPixels, base int) int {
 	return (v * paddingPixels) + base
 }
 
-func adjustmentAmount(a *Adjustment, subTotal int64) int64 {
+func adjustmentAmount(a *Adjustment, subTotal int) int {
 	if a == nil {
 		return 0
 	}
@@ -138,23 +138,23 @@ func qrcode(url string) template.HTML {
 }
 
 type item struct {
-	id    int64
+	id    int
 	l     *LineItem
 	fl    *PrintableLineItem
 	found bool
 }
 
-func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int64) (*PrintableQuote, error) {
+func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int) (*PrintableQuote, error) {
 	fullQuote := &PrintableQuote{}
 	return fullQuote, v.store.Transaction(func(ctx context.Context) error {
 		quote, err := v.store.GetQuote(ctx, id)
 		if err != nil {
 			return err
 		}
-		images := map[int64]*Image{}
-		contacts := map[int64]*Contact{}
-		lineItems := map[int64]*LineItem{}
-		adjustments := map[int64]*Adjustment{}
+		images := map[int]*Image{}
+		contacts := map[int]*Contact{}
+		lineItems := map[int]*LineItem{}
+		adjustments := map[int]*Adjustment{}
 		if quote.LogoId >= 0 {
 			imageUrl, err := v.store.GetImageUrl(ctx, quote.LogoId)
 			if err != nil {
@@ -220,7 +220,7 @@ func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int64) (*Printab
 	})
 }
 
-func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int64]*Image, contacts map[int64]*Contact, lineItems map[int64]*LineItem, adjustments map[int64]*Adjustment) *PrintableQuote {
+func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int]*Image, contacts map[int]*Contact, lineItems map[int]*LineItem, adjustments map[int]*Adjustment) *PrintableQuote {
 	q := &PrintableQuote{Id: quote.Id}
 	q.Code = quote.Code
 	q.OrderNumber = quote.OrderNumber
@@ -255,7 +255,7 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int64]*Image, c
 	}
 
 	var items []*item
-	lookup := map[int64]*item{}
+	lookup := map[int]*item{}
 	for _, lineItemId := range quote.LineItemIds {
 		l, fl := v.getPrintableLineItem(lineItems, images, lineItemId)
 		i := &item{l: l, fl: fl, found: false}
@@ -279,9 +279,9 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int64]*Image, c
 		}
 	}
 
-	visited := map[int64]bool{}
+	visited := map[int]bool{}
 	for i, item := range q.LineItems {
-		q.SubTotal += v.findAmount(lookup, item, map[int64]bool{})
+		q.SubTotal += v.findAmount(lookup, item, map[int]bool{})
 		v.calculateDepthAndNumber("", 0, i, item, visited)
 	}
 
@@ -303,7 +303,7 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int64]*Image, c
 	return q
 }
 
-func (v *priceyPrint) getPrintableLineItem(lineItems map[int64]*LineItem, images map[int64]*Image, id int64) (*LineItem, *PrintableLineItem) {
+func (v *priceyPrint) getPrintableLineItem(lineItems map[int]*LineItem, images map[int]*Image, id int) (*LineItem, *PrintableLineItem) {
 	l := lineItems[id]
 	var fl *PrintableLineItem
 	if l != nil {
@@ -339,7 +339,7 @@ func (v *priceyPrint) getPrintableLineItem(lineItems map[int64]*LineItem, images
 	return l, fl
 }
 
-func (v *priceyPrint) findAmount(lookup map[int64]*item, item *PrintableLineItem, visited map[int64]bool) int64 {
+func (v *priceyPrint) findAmount(lookup map[int]*item, item *PrintableLineItem, visited map[int]bool) int {
 	visited[item.Id] = true
 	i := lookup[item.Id]
 	if i == nil {
@@ -356,7 +356,7 @@ func (v *priceyPrint) findAmount(lookup map[int64]*item, item *PrintableLineItem
 	return item.Amount
 }
 
-func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *PrintableLineItem, visited map[int64]bool) {
+func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *PrintableLineItem, visited map[int]bool) {
 	if visited[item.Id] {
 		return
 	}
@@ -373,7 +373,7 @@ func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index 
 	}
 }
 
-func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error {
+func (v *priceyPrint) Standard(ctx context.Context, id int, w io.Writer) error {
 	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err
@@ -395,7 +395,7 @@ func (v *priceyPrint) Standard(ctx context.Context, id int64, w io.Writer) error
 	return nil
 }
 
-func (v *priceyPrint) StandardHTML(ctx context.Context, id int64, w io.Writer) error {
+func (v *priceyPrint) StandardHTML(ctx context.Context, id int, w io.Writer) error {
 	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err

@@ -5,25 +5,25 @@ import (
 )
 
 type Quote struct {
-	Id                     int64      `json:"id"`
+	Id                     int        `json:"id"`
 	Code                   string     `json:"code"`
 	OrderNumber            string     `json:"orderNumber"`
-	LogoId                 int64      `json:"logoId"`
+	LogoId                 int        `json:"logoId"`
 	PrimaryBackgroundColor string     `json:"primaryBackgroundColor"`
 	PrimaryTextColor       string     `json:"primaryTextColor"`
 	IssueDate              *time.Time `json:"issueDate"`
 	ExpirationDate         *time.Time `json:"expirationDate"`
 	PaymentTerms           string     `json:"paymentTerms"`
 	Notes                  string     `json:"notes"`
-	SenderId               int64      `json:"senderId"`
-	BillToId               int64      `json:"billToId"`
-	ShipToId               int64      `json:"shipToId"`
-	LineItemIds            []int64    `json:"lineItemIds"`
-	SubTotal               int64      `json:"subTotal"`
-	AdjustmentIds          []int64    `json:"adjustmentsIds"`
-	Total                  int64      `json:"total"`
-	BalanceDue             int64      `json:"balanceDue"`
-	BalancePercentDue      int64      `json:"balancePercentDue"`
+	SenderId               int        `json:"senderId"`
+	BillToId               int        `json:"billToId"`
+	ShipToId               int        `json:"shipToId"`
+	LineItemIds            []int      `json:"lineItemIds"`
+	SubTotal               int        `json:"subTotal"`
+	AdjustmentIds          []int      `json:"adjustmentsIds"`
+	Total                  int        `json:"total"`
+	BalanceDue             int        `json:"balanceDue"`
+	BalancePercentDue      int        `json:"balancePercentDue"`
 	BalanceDueOn           *time.Time `json:"balanceDueOn"`
 	PayUrl                 string     `json:"payUrl"`
 	Sent                   bool       `json:"sent"`
@@ -37,19 +37,19 @@ type Quote struct {
 }
 
 type LineItem struct {
-	Id              int64     `json:"id"`
-	QuoteId         int64     `json:"quoteId"`
-	ParentId        *int64    `json:"parentId"`
-	SubItemIds      []int64   `json:"subItemIds"`
-	ImageId         *int64    `json:"imageId"`
+	Id              int       `json:"id"`
+	QuoteId         int       `json:"quoteId"`
+	ParentId        *int      `json:"parentId"`
+	SubItemIds      []int     `json:"subItemIds"`
+	ImageId         *int      `json:"imageId"`
 	Description     string    `json:"description"`
-	Quantity        int64     `json:"quantity"`
+	Quantity        int       `json:"quantity"`
 	QuantitySuffix  string    `json:"quantitySuffix"`
 	QuantityPrefix  string    `json:"quantityPrefix"`
-	UnitPrice       int64     `json:"unitPrice"`
+	UnitPrice       int       `json:"unitPrice"`
 	UnitPriceSuffix string    `json:"unitSuffix"`
 	UnitPricePrefix string    `json:"unitPrefix"`
-	Amount          *int64    `json:"amount"`
+	Amount          *int      `json:"amount"`
 	AmountSuffix    string    `json:"amountSuffix"`
 	AmountPrefix    string    `json:"amountPrefix"`
 	Open            bool      `json:"open"`
@@ -58,16 +58,16 @@ type LineItem struct {
 }
 
 type Adjustment struct {
-	Id          int64          `json:"id"`
-	QuoteId     int64          `json:"quoteId"`
+	Id          int            `json:"id"`
+	QuoteId     int            `json:"quoteId"`
 	Description string         `json:"description"`
 	Type        AdjustmentType `json:"type"`
-	Amount      int64          `json:"amount"`
+	Amount      int            `json:"amount"`
 	Created     time.Time      `json:"created"`
 	Updated     time.Time      `json:"updated"`
 }
 
-type AdjustmentType = int64
+type AdjustmentType = int
 
 const (
 	AdjustmentTypeFlat    = 0
@@ -75,7 +75,7 @@ const (
 )
 
 type Contact struct {
-	Id          int64
+	Id          int
 	Name        string
 	CompanyName string
 	Phones      []string
@@ -88,7 +88,7 @@ type Contact struct {
 }
 
 type PrintableQuote struct {
-	Id                     int64
+	Id                     int
 	Code                   string
 	OrderNumber            string
 	Logo                   *Image
@@ -102,10 +102,10 @@ type PrintableQuote struct {
 	BillTo                 *Contact
 	ShipTo                 *Contact
 	LineItems              []*PrintableLineItem
-	SubTotal               int64
+	SubTotal               int
 	Adjustments            []*Adjustment
-	Total                  int64
-	BalanceDue             int64
+	Total                  int
+	BalanceDue             int
 	BalanceDueOn           *time.Time
 	PayUrl                 string
 	Sent                   bool
@@ -119,20 +119,20 @@ type PrintableQuote struct {
 }
 
 type PrintableLineItem struct {
-	Id               int64
+	Id               int
 	Depth            int
 	Number           string
 	SubItems         []*PrintableLineItem
 	Image            *Image
 	Description      string
-	Quantity         int64
+	Quantity         int
 	QuantitySuffix   string
 	QuantityPrefix   string
-	UnitPrice        int64
+	UnitPrice        int
 	UnitPriceSuffix  string
 	UnitPricePrefix  string
 	AmountOverridden bool
-	Amount           int64
+	Amount           int
 	AmountSuffix     string
 	AmountPrefix     string
 	Created          time.Time

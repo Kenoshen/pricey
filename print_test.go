@@ -15,7 +15,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 	m := func(tm time.Time) *time.Time {
 		return &tm
 	}
-	i := func(num int64) *int64 {
+	i := func(num int) *int {
 		return &num
 	}
 	now := time.Now()
@@ -33,15 +33,15 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 		SenderId:               1,
 		BillToId:               2,
 		ShipToId:               3,
-		LineItemIds:            []int64{2, 1, 3, 4, 5, 6, 7, 8, 9, 10},
+		LineItemIds:            []int{2, 1, 3, 4, 5, 6, 7, 8, 9, 10},
 		SubTotal:               0,
-		AdjustmentIds:          []int64{1, 2, 3},
+		AdjustmentIds:          []int{1, 2, 3},
 		Total:                  0,
 		BalancePercentDue:      50,
 		BalanceDueOn:           m(now.Add(10 * 24 * time.Hour)),
 		PayUrl:                 "http://google.com",
 	}
-	images := map[int64]*Image{
+	images := map[int]*Image{
 		1: {
 			Id:  1,
 			Url: "https://raw.githubusercontent.com/sparksuite/simple-html-invoice-template/refs/heads/master/website/images/logo.png",
@@ -55,7 +55,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Url: "https://images.thdstatic.com/productImages/4133747e-a5c0-4d5f-8c4e-a33409a0b804/svn/rheem-gas-tank-water-heaters-xg50t06he40u0-64_600.jpg",
 		},
 	}
-	contacts := map[int64]*Contact{
+	contacts := map[int]*Contact{
 		1: {
 			Id:          1,
 			Name:        "John Doe",
@@ -83,7 +83,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Zip:    "87654",
 		},
 	}
-	lineItems := map[int64]*LineItem{
+	lineItems := map[int]*LineItem{
 		1: {
 			Id:              1,
 			ImageId:         i(2),
@@ -98,7 +98,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Id:           2,
 			Description:  "Shipping and Handling",
 			AmountPrefix: "$",
-			SubItemIds:   []int64{3},
+			SubItemIds:   []int{3},
 		},
 		3: {
 			Id:           3,
@@ -111,7 +111,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Id:           4,
 			Description:  "Replace Old Water Heater",
 			AmountPrefix: "$",
-			SubItemIds:   []int64{6, 5},
+			SubItemIds:   []int{6, 5},
 		},
 		5: {
 			Id:              5,
@@ -145,7 +145,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Amount:       i(80000),
 		},
 	}
-	adjustments := map[int64]*Adjustment{
+	adjustments := map[int]*Adjustment{
 		1: {
 			Description: "Taxes",
 			Type:        AdjustmentTypePercent,
