@@ -146,7 +146,7 @@ type item struct {
 
 func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int) (*PrintableQuote, error) {
 	fullQuote := &PrintableQuote{}
-	return fullQuote, v.store.Transaction(func(ctx context.Context) error {
+	return fullQuote, v.store.Transaction(ctx, func(ctx context.Context) error {
 		quote, err := v.store.GetQuote(ctx, id)
 		if err != nil {
 			return err
