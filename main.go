@@ -58,7 +58,7 @@ func (v *priceyPricebook) Set(ctx context.Context, pb Pricebook) (*Pricebook, er
 }
 
 func (v *priceyPricebook) Delete(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.DeletePricebook(ctx, id)
 		if err != nil {
 			return err
@@ -85,7 +85,7 @@ func (v *priceyPricebook) Delete(ctx context.Context, id int) error {
 }
 
 func (v *priceyPricebook) Recover(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.RecoverPricebook(ctx, id)
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func (v *priceyCategory) Move(ctx context.Context, id, parentId int) (*Category,
 }
 
 func (v *priceyCategory) Delete(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.DeleteCategory(ctx, id)
 		if err != nil {
 			return err
@@ -159,7 +159,7 @@ func (v *priceyCategory) Delete(ctx context.Context, id int) error {
 }
 
 func (v *priceyCategory) Recover(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.RecoverCategory(ctx, id)
 		if err != nil {
 			return err
@@ -200,7 +200,7 @@ func (v *priceyItem) Category(ctx context.Context, categoryId int) ([]*Item, err
 
 func (v *priceyItem) Move(ctx context.Context, id, categoryId int) (*Item, error) {
 	var item *Item
-	return item, v.store.Transaction(func(ctx context.Context) error {
+	return item, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		item, err = v.store.MoveItem(ctx, id, categoryId)
 		if err != nil {
@@ -253,7 +253,7 @@ func (v *priceyItem) Search(ctx context.Context, pricebookId int, search string)
 }
 
 func (v *priceyItem) Delete(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.DeleteItem(ctx, id)
 		if err != nil {
 			return err
@@ -269,7 +269,7 @@ func (v *priceyItem) Delete(ctx context.Context, id int) error {
 }
 
 func (v *priceyItem) Recover(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		err := v.store.RecoverItem(ctx, id)
 		if err != nil {
 			return err
@@ -349,7 +349,7 @@ func (v *priceyTag) Search(ctx context.Context, pricebookId int, search string) 
 }
 
 func (v *priceyTag) Delete(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		tag, err := v.store.GetTag(ctx, id)
 		if err != nil {
 			return err
@@ -482,7 +482,7 @@ func (v *priceyQuote) SetPayUrl(ctx context.Context, id int, payUrl string) (*Qu
 
 func (v *priceyQuote) SetSent(ctx context.Context, id int, sent bool) (*Quote, error) {
 	var q *Quote
-	return q, v.store.Transaction(func(ctx context.Context) error {
+	return q, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		q, err = v.store.UpdateQuoteSent(ctx, id, sent)
 		if err != nil {
@@ -501,7 +501,7 @@ func (v *priceyQuote) SetSent(ctx context.Context, id int, sent bool) (*Quote, e
 
 func (v *priceyQuote) SetSold(ctx context.Context, id int, sold bool) (*Quote, error) {
 	var q *Quote
-	return q, v.store.Transaction(func(ctx context.Context) error {
+	return q, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		q, err = v.store.UpdateQuoteSold(ctx, id, sold)
 		if err != nil {
@@ -532,7 +532,7 @@ type priceyLineItem struct {
 
 func (v *priceyLineItem) New(ctx context.Context, quoteId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error) {
 	var item *LineItem
-	return item, v.store.Transaction(func(ctx context.Context) error {
+	return item, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		item, err = v.store.CreateLineItem(ctx, quoteId, description, quantity, unitPrice, amount)
 		if err != nil {
@@ -551,7 +551,7 @@ func (v *priceyLineItem) New(ctx context.Context, quoteId int, description strin
 
 func (v *priceyLineItem) NewSub(ctx context.Context, quoteId, parentId int, description string, quantity, unitPrice int, amount *int) (*LineItem, error) {
 	var item *LineItem
-	return item, v.store.Transaction(func(ctx context.Context) error {
+	return item, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		item, err = v.store.CreateSubLineItem(ctx, quoteId, parentId, description, quantity, unitPrice, amount)
 		if err != nil {
@@ -570,7 +570,7 @@ func (v *priceyLineItem) NewSub(ctx context.Context, quoteId, parentId int, desc
 
 func (v *priceyLineItem) Duplicate(ctx context.Context, id int) (*LineItem, error) {
 	var item *LineItem
-	return item, v.store.Transaction(func(ctx context.Context) error {
+	return item, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		item, err = v.store.CreateDuplicateLineItem(ctx, id)
 		if err != nil {
@@ -629,7 +629,7 @@ type priceyAdjustment struct {
 
 func (v *priceyAdjustment) New(ctx context.Context, quoteId int, description string, amount int, adjustmentType AdjustmentType) (*Adjustment, error) {
 	var a *Adjustment
-	return a, v.store.Transaction(func(ctx context.Context) error {
+	return a, v.store.Transaction(ctx, func(ctx context.Context) error {
 		var err error
 		a, err = v.store.CreateAdjustment(ctx, quoteId, description, amount, adjustmentType)
 		if err != nil {
@@ -654,7 +654,7 @@ func (v *priceyAdjustment) Update(ctx context.Context, id int, description strin
 }
 
 func (v *priceyAdjustment) Delete(ctx context.Context, id int) error {
-	return v.store.Transaction(func(ctx context.Context) error {
+	return v.store.Transaction(ctx, func(ctx context.Context) error {
 		a, err := v.store.GetAdjustment(ctx, id)
 		if err != nil {
 			return err

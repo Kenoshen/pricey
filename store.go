@@ -177,5 +177,5 @@ type Store interface {
 	// HELPER
 	// ////////////
 
-	Transaction(func(ctx context.Context) error) error
+	Transaction(ctx context.Context, f func(ctx context.Context) error) error
 }
