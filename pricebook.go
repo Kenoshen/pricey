@@ -74,13 +74,15 @@ type Image struct {
 }
 
 type Tag struct {
-	Id          int
-	PricebookId int
-	Name        string
-	Description string
-	Created     time.Time
-	Updated     time.Time
-	Hidden      bool
+	Id              int
+	PricebookId     int
+	Name            string
+	Description     string
+	BackgroundColor string
+	TextColor       string
+	Created         time.Time
+	Updated         time.Time
+	Hidden          bool
 }
 
 type Price struct {
