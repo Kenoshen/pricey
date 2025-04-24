@@ -21,7 +21,7 @@ type Store interface {
 	// CATEGORY
 	// ////////////
 
-	CreateCategory(ctx context.Context, name, description string) (*Category, error)
+	CreateCategory(ctx context.Context, pricebookId int, name, description string) (*Category, error)
 	GetCategory(ctx context.Context, id int) (*Category, error)
 	GetCategories(ctx context.Context, pricebookId int) ([]*Category, error)
 	UpdateCategoryInfo(ctx context.Context, id int, name, description string) (*Category, error)

@@ -115,8 +115,8 @@ type priceyCategory struct {
 	store Store
 }
 
-func (v *priceyCategory) New(ctx context.Context, name, description string) (*Category, error) {
-	return v.store.CreateCategory(ctx, name, description)
+func (v *priceyCategory) New(ctx context.Context, pricebookId int, name, description string) (*Category, error) {
+	return v.store.CreateCategory(ctx, pricebookId, name, description)
 }
 
 func (v *priceyCategory) Get(ctx context.Context, id int) (*Category, error) {
