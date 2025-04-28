@@ -34,7 +34,7 @@ type Item struct {
 	PricebookId      int
 	CategoryId       int
 	ParentIds        []int
-	SubItemIds       []int
+	SubItemIds       []SubItem
 	Code             string
 	SKU              string
 	Name             string
@@ -57,10 +57,8 @@ type SimpleItem struct {
 }
 
 type SubItem struct {
-	SubItemId   int
-	ItemId      int
-	PricebookId int
-	Quantity    int
+	SubItemId int
+	Quantity  int
 }
 
 type Image struct {
