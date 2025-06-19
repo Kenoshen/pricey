@@ -32,6 +32,7 @@ const (
 var (
 	UnauthorizedOrgError   = errors.New("orgId did not match orgId of document")
 	UnauthorizedGroupError = errors.New("groupId did not match groupId of document")
+	InvalidPriceIdError    = errors.New("price id is invalid because it does not exist on the sub item")
 )
 
 func NewFirebase(ctx context.Context, ext OrgGroupExtractor, config *firebase.Config, opts ...option.ClientOption) (*Firebase, error) {
@@ -59,7 +60,7 @@ func NewFirebase(ctx context.Context, ext OrgGroupExtractor, config *firebase.Co
 }
 
 // CreateToken generates a custom auth token for
-func (f *Firebase) CreateToken(ctx context.Context, orgId, groupId, userId string, claims map[string]any) (string, error) {
+func (f *Firebase) CreateToken(ctx context.Context, orgId, groupId, userId ID, claims map[string]any) (string, error) {
 	actualClaims := map[string]any{}
 	maps.Copy(actualClaims, claims)
 	actualClaims["o"] = orgId
@@ -664,6 +665,11 @@ func (f *Firebase) AddSubItem(ctx context.Context, id ID, subItemId ID, quantity
 	if err != nil {
 		return nil, err
 	}
+	subItem := &Item{}
+	err = f.get(ctx, ItemCollection, subItemId, subItem)
+	if err != nil {
+		return nil, err
+	}
 	list := orig.SubItemIds
 	for _, elem := range list {
 		if elem.SubItemID == subItemId {
@@ -671,7 +677,12 @@ func (f *Firebase) AddSubItem(ctx context.Context, id ID, subItemId ID, quantity
 			return orig, nil
 		}
 	}
-	list = append(list, SubItem{SubItemID: subItemId, Quantity: quantity})
+	var firstPriceId *ID
+	if len(subItem.PriceIds) > 0 {
+		tmp := subItem.PriceIds[0]
+		firstPriceId = &tmp
+	}
+	list = append(list, SubItem{SubItemID: subItemId, Quantity: quantity, PriceId: firstPriceId})
 	return update[Item](f, ctx, ItemCollection, id,
 		field{"SubItemIds", list},
 	)
@@ -688,6 +699,46 @@ func (f *Firebase) UpdateSubItemQuantity(ctx context.Context, id ID, subItemId I
 	for i, elem := range list {
 		if elem.SubItemID == subItemId {
 			orig.SubItemIds[i].Quantity = quantity
+			found = true
+			break
+		}
+	}
+	if !found {
+		// if the value was not in the list, it does not need to be updated
+		return orig, nil
+	}
+	return update[Item](f, ctx, ItemCollection, id,
+		field{"SubItemIds", list},
+	)
+}
+
+func (f *Firebase) UpdateSubItemPrice(ctx context.Context, id ID, subItemId ID, priceId ID) (*Item, error) {
+	orig := &Item{}
+	err := f.get(ctx, ItemCollection, id, orig)
+	if err != nil {
+		return nil, err
+	}
+	subItem := &Item{}
+	err = f.get(ctx, ItemCollection, subItemId, subItem)
+	if err != nil {
+		return nil, err
+	}
+	found := false
+	for _, p := range subItem.PriceIds {
+		if p == subItemId {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, InvalidPriceIdError
+	}
+
+	list := orig.SubItemIds
+	found = false
+	for i, elem := range list {
+		if elem.SubItemID == subItemId {
+			orig.SubItemIds[i].PriceId = &priceId
 			found = true
 			break
 		}

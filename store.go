@@ -65,6 +65,7 @@ type Store interface {
 
 	AddSubItem(ctx context.Context, id ID, subItemId ID, quantity int) (*Item, error)
 	UpdateSubItemQuantity(ctx context.Context, id ID, subItemId ID, quantity int) (*Item, error)
+	UpdateSubItemPrice(ctx context.Context, id ID, subItemId ID, priceId ID) (*Item, error)
 	RemoveSubItem(ctx context.Context, id ID, subItemId ID) (*Item, error)
 
 	// ////////////
@@ -182,7 +183,7 @@ type Store interface {
 }
 
 type Auth interface {
-	CreateToken(orgId, groupId, userId ID, claims map[string]interface{}) (string, error)
+	CreateToken(ctx context.Context, orgId, groupId, userId ID, claims map[string]any) (string, error)
 }
 
 type OrgGroupExtractor = func(ctx context.Context) (orgId ID, groupId ID, err error)

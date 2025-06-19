@@ -90,6 +90,7 @@ type SimpleItem struct {
 
 type SubItem struct {
 	SubItemID ID  `json:"subItemId"`
+	PriceId   *ID `json:"priceId"`
 	Quantity  int `json:"quantity"`
 }
 
