@@ -138,24 +138,24 @@ func qrcode(url string) template.HTML {
 }
 
 type item struct {
-	id    int
+	id    ID
 	l     *LineItem
 	fl    *PrintableLineItem
 	found bool
 }
 
-func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int) (*PrintableQuote, error) {
+func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id ID) (*PrintableQuote, error) {
 	fullQuote := &PrintableQuote{}
 	return fullQuote, v.store.Transaction(ctx, func(ctx context.Context) error {
 		quote, err := v.store.GetQuote(ctx, id)
 		if err != nil {
 			return err
 		}
-		images := map[int]*Image{}
-		contacts := map[int]*Contact{}
-		lineItems := map[int]*LineItem{}
-		adjustments := map[int]*Adjustment{}
-		if quote.LogoId >= 0 {
+		images := map[ID]*Image{}
+		contacts := map[ID]*Contact{}
+		lineItems := map[ID]*LineItem{}
+		adjustments := map[ID]*Adjustment{}
+		if quote.LogoId != "" {
 			imageUrl, err := v.store.GetImageUrl(ctx, quote.LogoId)
 			if err != nil {
 				return err
@@ -167,21 +167,21 @@ func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int) (*Printable
 				}
 			}
 		}
-		if quote.SenderId >= 0 {
+		if quote.SenderId != "" {
 			c, err := v.store.GetContact(ctx, quote.SenderId)
 			if err != nil {
 				return err
 			}
 			contacts[quote.SenderId] = c
 		}
-		if quote.BillToId >= 0 {
+		if quote.BillToId != "" {
 			c, err := v.store.GetContact(ctx, quote.BillToId)
 			if err != nil {
 				return err
 			}
 			contacts[quote.BillToId] = c
 		}
-		if quote.ShipToId >= 0 {
+		if quote.ShipToId != "" {
 			c, err := v.store.GetContact(ctx, quote.ShipToId)
 			if err != nil {
 				return err
@@ -220,7 +220,7 @@ func (v *priceyPrint) GetPrintableQuote(ctx context.Context, id int) (*Printable
 	})
 }
 
-func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int]*Image, contacts map[int]*Contact, lineItems map[int]*LineItem, adjustments map[int]*Adjustment) *PrintableQuote {
+func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[ID]*Image, contacts map[ID]*Contact, lineItems map[ID]*LineItem, adjustments map[ID]*Adjustment) *PrintableQuote {
 	q := &PrintableQuote{Id: quote.Id}
 	q.Code = quote.Code
 	q.OrderNumber = quote.OrderNumber
@@ -241,21 +241,21 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int]*Image, con
 	q.Hidden = quote.Hidden
 	q.Locked = quote.Locked
 
-	if quote.LogoId >= 0 {
+	if quote.LogoId != "" {
 		q.Logo = images[quote.LogoId]
 	}
-	if quote.SenderId >= 0 {
+	if quote.SenderId != "" {
 		q.Sender = contacts[quote.SenderId]
 	}
-	if quote.BillToId >= 0 {
+	if quote.BillToId != "" {
 		q.BillTo = contacts[quote.BillToId]
 	}
-	if quote.ShipToId >= 0 {
+	if quote.ShipToId != "" {
 		q.ShipTo = contacts[quote.ShipToId]
 	}
 
 	var items []*item
-	lookup := map[int]*item{}
+	lookup := map[ID]*item{}
 	for _, lineItemId := range quote.LineItemIds {
 		l, fl := v.getPrintableLineItem(lineItems, images, lineItemId)
 		i := &item{l: l, fl: fl, found: false}
@@ -279,9 +279,9 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int]*Image, con
 		}
 	}
 
-	visited := map[int]bool{}
+	visited := map[ID]bool{}
 	for i, item := range q.LineItems {
-		q.SubTotal += v.findAmount(lookup, item, map[int]bool{})
+		q.SubTotal += v.findAmount(lookup, item, map[ID]bool{})
 		v.calculateDepthAndNumber("", 0, i, item, visited)
 	}
 
@@ -303,7 +303,7 @@ func (v *priceyPrint) getPrintableQuote(quote *Quote, images map[int]*Image, con
 	return q
 }
 
-func (v *priceyPrint) getPrintableLineItem(lineItems map[int]*LineItem, images map[int]*Image, id int) (*LineItem, *PrintableLineItem) {
+func (v *priceyPrint) getPrintableLineItem(lineItems map[ID]*LineItem, images map[ID]*Image, id ID) (*LineItem, *PrintableLineItem) {
 	l := lineItems[id]
 	var fl *PrintableLineItem
 	if l != nil {
@@ -339,7 +339,7 @@ func (v *priceyPrint) getPrintableLineItem(lineItems map[int]*LineItem, images m
 	return l, fl
 }
 
-func (v *priceyPrint) findAmount(lookup map[int]*item, item *PrintableLineItem, visited map[int]bool) int {
+func (v *priceyPrint) findAmount(lookup map[ID]*item, item *PrintableLineItem, visited map[ID]bool) int {
 	visited[item.Id] = true
 	i := lookup[item.Id]
 	if i == nil {
@@ -356,7 +356,7 @@ func (v *priceyPrint) findAmount(lookup map[int]*item, item *PrintableLineItem, 
 	return item.Amount
 }
 
-func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *PrintableLineItem, visited map[int]bool) {
+func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index int, item *PrintableLineItem, visited map[ID]bool) {
 	if visited[item.Id] {
 		return
 	}
@@ -373,7 +373,7 @@ func (v *priceyPrint) calculateDepthAndNumber(parentNumber string, depth, index 
 	}
 }
 
-func (v *priceyPrint) Standard(ctx context.Context, id int, w io.Writer) error {
+func (v *priceyPrint) Standard(ctx context.Context, id ID, w io.Writer) error {
 	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err
@@ -395,7 +395,7 @@ func (v *priceyPrint) Standard(ctx context.Context, id int, w io.Writer) error {
 	return nil
 }
 
-func (v *priceyPrint) StandardHTML(ctx context.Context, id int, w io.Writer) error {
+func (v *priceyPrint) StandardHTML(ctx context.Context, id ID, w io.Writer) error {
 	q, err := v.GetPrintableQuote(ctx, id)
 	if err != nil {
 		return err

@@ -18,46 +18,49 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 	i := func(num int) *int {
 		return &num
 	}
+	s := func(str string) *string {
+		return &str
+	}
 	now := time.Now()
 	quote := &Quote{
-		Id:                     64,
+		Id:                     "64",
 		Code:                   "INV-001",
 		OrderNumber:            "O#0012345",
-		LogoId:                 1,
+		LogoId:                 "1",
 		PrimaryBackgroundColor: "green",
 		PrimaryTextColor:       "white",
 		IssueDate:              m(now.Add(-3 * 24 * time.Hour)),
 		ExpirationDate:         m(now.Add(10 * 24 * time.Hour)),
 		PaymentTerms:           "pay 1/2 up front, then 1/2 on delivery",
 		Notes:                  "Thanks so much for your business!\n\nAnd thank you so much for being a valued customer who always pays on time and never requires us to track you down to try and get payment.",
-		SenderId:               1,
-		BillToId:               2,
-		ShipToId:               3,
-		LineItemIds:            []int{2, 1, 3, 4, 5, 6, 7, 8, 9, 10},
+		SenderId:               "1",
+		BillToId:               "2",
+		ShipToId:               "3",
+		LineItemIds:            []ID{"2", "1", "3", "4", "5", "6", "7", "8", "9", "10"},
 		SubTotal:               0,
-		AdjustmentIds:          []int{1, 2, 3},
+		AdjustmentIds:          []ID{"1", "2", "3"},
 		Total:                  0,
 		BalancePercentDue:      50,
 		BalanceDueOn:           m(now.Add(10 * 24 * time.Hour)),
 		PayUrl:                 "http://google.com",
 	}
-	images := map[int]*Image{
-		1: {
-			Id:  1,
+	images := map[ID]*Image{
+		"1": {
+			Id:  "1",
 			Url: "https://raw.githubusercontent.com/sparksuite/simple-html-invoice-template/refs/heads/master/website/images/logo.png",
 		},
-		2: {
-			Id:  2,
+		"2": {
+			Id:  "2",
 			Url: "https://cdn11.bigcommerce.com/s-bip927t4m2/images/stencil/1280x1280/products/1667/3417/s-l500__38868.1677889557.png?c=2",
 		},
-		3: {
-			Id:  3,
+		"3": {
+			Id:  "3",
 			Url: "https://images.thdstatic.com/productImages/4133747e-a5c0-4d5f-8c4e-a33409a0b804/svn/rheem-gas-tank-water-heaters-xg50t06he40u0-64_600.jpg",
 		},
 	}
-	contacts := map[int]*Contact{
-		1: {
-			Id:          1,
+	contacts := map[ID]*Contact{
+		"1": {
+			Id:          "1",
 			Name:        "John Doe",
 			CompanyName: "Acme Corp",
 			Phones:      []string{"123-555-1234", "(555)555-5555"},
@@ -68,14 +71,16 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			State:       "TX",
 			Zip:         "12345",
 		},
-		2: {
+		"2": {
+			Id:     "2",
 			Name:   "Wile E. Coyote",
 			Street: "62nd Flatrock",
 			City:   "Mojave Desert",
 			State:  "Arizona",
 			Zip:    "87654",
 		},
-		3: {
+		"3": {
+			Id:     "3",
 			Name:   "Wile E. Coyote",
 			Street: "Left Side of the Road",
 			City:   "Mojave Desert Middle of Nowhere",
@@ -83,10 +88,10 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Zip:    "87654",
 		},
 	}
-	lineItems := map[int]*LineItem{
-		1: {
-			Id:              1,
-			ImageId:         i(2),
+	lineItems := map[ID]*LineItem{
+		"1": {
+			Id:              "1",
+			ImageId:         s("2"),
 			Description:     "Acme Rocket Patch",
 			Quantity:        400,
 			UnitPrice:       1000,
@@ -94,28 +99,28 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			AmountPrefix:    "$",
 			Amount:          nil,
 		},
-		2: {
-			Id:           2,
+		"2": {
+			Id:           "2",
 			Description:  "Shipping and Handling",
 			AmountPrefix: "$",
-			SubItemIds:   []int{3},
+			SubItemIds:   []ID{"3"},
 		},
-		3: {
-			Id:           3,
-			ParentId:     i(2),
+		"3": {
+			Id:           "3",
+			ParentId:     s("2"),
 			Description:  "Shipping Fee",
 			AmountPrefix: "$",
 			Amount:       i(1000),
 		},
-		4: {
-			Id:           4,
+		"4": {
+			Id:           "4",
 			Description:  "Replace Old Water Heater",
 			AmountPrefix: "$",
-			SubItemIds:   []int{6, 5},
+			SubItemIds:   []ID{"6", "5"},
 		},
-		5: {
-			Id:              5,
-			ParentId:        i(4),
+		"5": {
+			Id:              "5",
+			ParentId:        s("4"),
 			Quantity:        2000,
 			QuantitySuffix:  " hours",
 			UnitPricePrefix: "$",
@@ -124,39 +129,42 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 			Description:     "Labor & Disposal",
 			AmountPrefix:    "$",
 		},
-		6: {
-			Id:           6,
-			ParentId:     i(4),
-			ImageId:      i(3),
+		"6": {
+			Id:           "6",
+			ParentId:     s("4"),
+			ImageId:      s("3"),
 			Description:  "Water Heater",
 			AmountPrefix: "$",
 			Amount:       i(80000),
 		},
-		7: {
-			Id:           7,
+		"7": {
+			Id:           "7",
 			Description:  "Water Heater",
 			AmountPrefix: "$",
 			Amount:       i(80000),
 		},
-		18: {
-			Id:           8,
+		"18": {
+			Id:           "8",
 			Description:  "Water Heater",
 			AmountPrefix: "$",
 			Amount:       i(80000),
 		},
 	}
-	adjustments := map[int]*Adjustment{
-		1: {
+	adjustments := map[ID]*Adjustment{
+		"1": {
+			Id:          "1",
 			Description: "Taxes",
 			Type:        AdjustmentTypePercent,
 			Amount:      7,
 		},
-		2: {
+		"2": {
+			Id:          "2",
 			Description: "Heavy Equipment Fee",
 			Type:        AdjustmentTypeFlat,
 			Amount:      5000,
 		},
-		3: {
+		"3": {
+			Id:          "3",
 			Description: "Invisible Fee",
 			Type:        AdjustmentTypePercent,
 			Amount:      0,
@@ -164,7 +172,7 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 	}
 
 	qExpected := &PrintableQuote{
-		Id:          64,
+		Id:          "64",
 		Code:        "INV-001",
 		OrderNumber: "O#0012345",
 		Logo: &Image{
@@ -379,7 +387,7 @@ func TestPrintableQuotePDF(t *testing.T) {
 	}
 	now := time.Now()
 	err = tmp.Execute(&buf, &PrintableQuote{
-		Id:          64,
+		Id:          "64",
 		Code:        "INV-001",
 		OrderNumber: "O#0012345",
 		Logo: &Image{

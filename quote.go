@@ -5,22 +5,22 @@ import (
 )
 
 type Quote struct {
-	Id                     int        `json:"id"`
+	Id                     ID         `json:"id"`
 	Code                   string     `json:"code"`
 	OrderNumber            string     `json:"orderNumber"`
-	LogoId                 int        `json:"logoId"`
+	LogoId                 ID         `json:"logoId"`
 	PrimaryBackgroundColor string     `json:"primaryBackgroundColor"`
 	PrimaryTextColor       string     `json:"primaryTextColor"`
 	IssueDate              *time.Time `json:"issueDate"`
 	ExpirationDate         *time.Time `json:"expirationDate"`
 	PaymentTerms           string     `json:"paymentTerms"`
 	Notes                  string     `json:"notes"`
-	SenderId               int        `json:"senderId"`
-	BillToId               int        `json:"billToId"`
-	ShipToId               int        `json:"shipToId"`
-	LineItemIds            []int      `json:"lineItemIds"`
+	SenderId               ID         `json:"senderId"`
+	BillToId               ID         `json:"billToId"`
+	ShipToId               ID         `json:"shipToId"`
+	LineItemIds            []ID       `json:"lineItemIds"`
 	SubTotal               int        `json:"subTotal"`
-	AdjustmentIds          []int      `json:"adjustmentsIds"`
+	AdjustmentIds          []ID       `json:"adjustmentsIds"`
 	Total                  int        `json:"total"`
 	BalanceDue             int        `json:"balanceDue"`
 	BalancePercentDue      int        `json:"balancePercentDue"`
@@ -37,11 +37,11 @@ type Quote struct {
 }
 
 type LineItem struct {
-	Id              int       `json:"id"`
-	QuoteId         int       `json:"quoteId"`
-	ParentId        *int      `json:"parentId"`
-	SubItemIds      []int     `json:"subItemIds"`
-	ImageId         *int      `json:"imageId"`
+	Id              ID        `json:"id"`
+	QuoteId         ID        `json:"quoteId"`
+	ParentId        *ID       `json:"parentId"`
+	SubItemIds      []ID      `json:"subItemIds"`
+	ImageId         *ID       `json:"imageId"`
 	Description     string    `json:"description"`
 	Quantity        int       `json:"quantity"`
 	QuantitySuffix  string    `json:"quantitySuffix"`
@@ -58,8 +58,8 @@ type LineItem struct {
 }
 
 type Adjustment struct {
-	Id          int            `json:"id"`
-	QuoteId     int            `json:"quoteId"`
+	Id          ID             `json:"id"`
+	QuoteId     ID             `json:"quoteId"`
 	Description string         `json:"description"`
 	Type        AdjustmentType `json:"type"`
 	Amount      int            `json:"amount"`
@@ -75,7 +75,7 @@ const (
 )
 
 type Contact struct {
-	Id          int
+	Id          ID
 	Name        string
 	CompanyName string
 	Phones      []string
@@ -88,7 +88,7 @@ type Contact struct {
 }
 
 type PrintableQuote struct {
-	Id                     int
+	Id                     ID
 	Code                   string
 	OrderNumber            string
 	Logo                   *Image
@@ -119,7 +119,7 @@ type PrintableQuote struct {
 }
 
 type PrintableLineItem struct {
-	Id               int
+	Id               ID
 	Depth            int
 	Number           string
 	SubItems         []*PrintableLineItem
