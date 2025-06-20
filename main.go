@@ -299,6 +299,10 @@ func (v *priceySubItem) SetQuantity(ctx context.Context, id, subItemId ID, quant
 	return v.store.UpdateSubItemQuantity(ctx, id, subItemId, quantity)
 }
 
+func (v *priceySubItem) SetPrice(ctx context.Context, id, subItemId ID, priceId ID) (*Item, error) {
+	return v.store.UpdateSubItemPrice(ctx, id, subItemId, priceId)
+}
+
 func (v *priceySubItem) Delete(ctx context.Context, id, subItemId ID) (*Item, error) {
 	return v.store.RemoveSubItem(ctx, id, subItemId)
 }
