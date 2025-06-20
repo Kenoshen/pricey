@@ -1,4 +1,4 @@
-module github.com/Kenoshen/pricey
+module github.com/kenoshen/pricey
 
 go 1.24.0
 
