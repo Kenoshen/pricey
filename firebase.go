@@ -1311,5 +1311,7 @@ func (f *Firebase) GetContact(ctx context.Context, id ID) (*Contact, error) {
 
 func (f *Firebase) Transaction(ctx context.Context, v func(ctx context.Context) error) error {
 	// TODO: implement me
-	return nil
+	// f.fire.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
+	// })
+	return v(ctx)
 }
