@@ -5,66 +5,66 @@ import (
 )
 
 type Quote struct {
-	Id                     ID         `json:"id"`
-	Code                   string     `json:"code"`
-	OrderNumber            string     `json:"orderNumber"`
-	LogoId                 ID         `json:"logoId"`
-	PrimaryBackgroundColor string     `json:"primaryBackgroundColor"`
-	PrimaryTextColor       string     `json:"primaryTextColor"`
-	IssueDate              *time.Time `json:"issueDate"`
-	ExpirationDate         *time.Time `json:"expirationDate"`
-	PaymentTerms           string     `json:"paymentTerms"`
-	Notes                  string     `json:"notes"`
-	SenderId               ID         `json:"senderId"`
-	BillToId               ID         `json:"billToId"`
-	ShipToId               ID         `json:"shipToId"`
-	LineItemIds            []ID       `json:"lineItemIds"`
-	SubTotal               int        `json:"subTotal"`
-	AdjustmentIds          []ID       `json:"adjustmentsIds"`
-	Total                  int        `json:"total"`
-	BalanceDue             int        `json:"balanceDue"`
-	BalancePercentDue      int        `json:"balancePercentDue"`
-	BalanceDueOn           *time.Time `json:"balanceDueOn"`
-	PayUrl                 string     `json:"payUrl"`
-	Sent                   bool       `json:"sent"`
-	SentOn                 *time.Time `json:"sentOn"`
-	Sold                   bool       `json:"sold"`
-	SoldOn                 *time.Time `json:"soldOn"`
-	Created                time.Time  `json:"created"`
-	Updated                time.Time  `json:"updated"`
-	Hidden                 bool       `json:"hidden"`
-	Locked                 bool       `json:"locked"`
+	Id                     ID         `json:"id" firestore:"id" firestore:"id"`
+	Code                   string     `json:"code" firestore:"code" firestore:"code"`
+	OrderNumber            string     `json:"orderNumber" firestore:"orderNumber" firestore:"orderNumber"`
+	LogoId                 ID         `json:"logoId" firestore:"logoId" firestore:"logoId"`
+	PrimaryBackgroundColor string     `json:"primaryBackgroundColor" firestore:"primaryBackgroundColor" firestore:"primaryBackgroundColor"`
+	PrimaryTextColor       string     `json:"primaryTextColor" firestore:"primaryTextColor" firestore:"primaryTextColor"`
+	IssueDate              *time.Time `json:"issueDate" firestore:"issueDate" firestore:"issueDate"`
+	ExpirationDate         *time.Time `json:"expirationDate" firestore:"expirationDate" firestore:"expirationDate"`
+	PaymentTerms           string     `json:"paymentTerms" firestore:"paymentTerms" firestore:"paymentTerms"`
+	Notes                  string     `json:"notes" firestore:"notes" firestore:"notes"`
+	SenderId               ID         `json:"senderId" firestore:"senderId" firestore:"senderId"`
+	BillToId               ID         `json:"billToId" firestore:"billToId" firestore:"billToId"`
+	ShipToId               ID         `json:"shipToId" firestore:"shipToId" firestore:"shipToId"`
+	LineItemIds            []ID       `json:"lineItemIds" firestore:"lineItemIds" firestore:"lineItemIds"`
+	SubTotal               int        `json:"subTotal" firestore:"subTotal" firestore:"subTotal"`
+	AdjustmentIds          []ID       `json:"adjustmentsIds" firestore:"adjustmentsIds" firestore:"adjustmentsIds"`
+	Total                  int        `json:"total" firestore:"total" firestore:"total"`
+	BalanceDue             int        `json:"balanceDue" firestore:"balanceDue" firestore:"balanceDue"`
+	BalancePercentDue      int        `json:"balancePercentDue" firestore:"balancePercentDue" firestore:"balancePercentDue"`
+	BalanceDueOn           *time.Time `json:"balanceDueOn" firestore:"balanceDueOn" firestore:"balanceDueOn"`
+	PayUrl                 string     `json:"payUrl" firestore:"payUrl" firestore:"payUrl"`
+	Sent                   bool       `json:"sent" firestore:"sent" firestore:"sent"`
+	SentOn                 *time.Time `json:"sentOn" firestore:"sentOn" firestore:"sentOn"`
+	Sold                   bool       `json:"sold" firestore:"sold" firestore:"sold"`
+	SoldOn                 *time.Time `json:"soldOn" firestore:"soldOn" firestore:"soldOn"`
+	Created                time.Time  `json:"created" firestore:"created" firestore:"created"`
+	Updated                time.Time  `json:"updated" firestore:"updated" firestore:"updated"`
+	Hidden                 bool       `json:"hidden" firestore:"hidden" firestore:"hidden"`
+	Locked                 bool       `json:"locked" firestore:"locked" firestore:"locked"`
 }
 
 type LineItem struct {
-	Id              ID        `json:"id"`
-	QuoteId         ID        `json:"quoteId"`
-	ParentId        *ID       `json:"parentId"`
-	SubItemIds      []ID      `json:"subItemIds"`
-	ImageId         *ID       `json:"imageId"`
-	Description     string    `json:"description"`
-	Quantity        int       `json:"quantity"`
-	QuantitySuffix  string    `json:"quantitySuffix"`
-	QuantityPrefix  string    `json:"quantityPrefix"`
-	UnitPrice       int       `json:"unitPrice"`
-	UnitPriceSuffix string    `json:"unitSuffix"`
-	UnitPricePrefix string    `json:"unitPrefix"`
-	Amount          *int      `json:"amount"`
-	AmountSuffix    string    `json:"amountSuffix"`
-	AmountPrefix    string    `json:"amountPrefix"`
-	Open            bool      `json:"open"`
-	Created         time.Time `json:"created"`
-	Updated         time.Time `json:"updated"`
+	Id              ID        `json:"id" firestore:"id" firestore:"id"`
+	QuoteId         ID        `json:"quoteId" firestore:"quoteId" firestore:"quoteId"`
+	ParentId        *ID       `json:"parentId" firestore:"parentId" firestore:"parentId"`
+	SubItemIds      []ID      `json:"subItemIds" firestore:"subItemIds" firestore:"subItemIds"`
+	ImageId         *ID       `json:"imageId" firestore:"imageId" firestore:"imageId"`
+	Description     string    `json:"description" firestore:"description" firestore:"description"`
+	Quantity        int       `json:"quantity" firestore:"quantity" firestore:"quantity"`
+	QuantitySuffix  string    `json:"quantitySuffix" firestore:"quantitySuffix" firestore:"quantitySuffix"`
+	QuantityPrefix  string    `json:"quantityPrefix" firestore:"quantityPrefix" firestore:"quantityPrefix"`
+	UnitPrice       int       `json:"unitPrice" firestore:"unitPrice" firestore:"unitPrice"`
+	UnitPriceSuffix string    `json:"unitSuffix" firestore:"unitSuffix" firestore:"unitSuffix"`
+	UnitPricePrefix string    `json:"unitPrefix" firestore:"unitPrefix" firestore:"unitPrefix"`
+	Amount          *int      `json:"amount" firestore:"amount" firestore:"amount"`
+	AmountSuffix    string    `json:"amountSuffix" firestore:"amountSuffix" firestore:"amountSuffix"`
+	AmountPrefix    string    `json:"amountPrefix" firestore:"amountPrefix" firestore:"amountPrefix"`
+	Open            bool      `json:"open" firestore:"open" firestore:"open"`
+	Created         time.Time `json:"created" firestore:"created" firestore:"created"`
+	Updated         time.Time `json:"updated" firestore:"updated" firestore:"updated"`
 }
 
 type Adjustment struct {
-	Id          ID             `json:"id"`
-	QuoteId     ID             `json:"quoteId"`
-	Description string         `json:"description"`
-	Type        AdjustmentType `json:"type"`
-	Amount      int            `json:"amount"`
-	Created     time.Time      `json:"created"`
-	Updated     time.Time      `json:"updated"`
+	Id          ID             `json:"id" firestore:"id" firestore:"id"`
+	QuoteId     ID             `json:"quoteId" firestore:"quoteId" firestore:"quoteId"`
+	Description string         `json:"description" firestore:"description" firestore:"description"`
+	Type        AdjustmentType `json:"type" firestore:"type" firestore:"type"`
+	Amount      int            `json:"amount" firestore:"amount" firestore:"amount"`
+	Created     time.Time      `json:"created" firestore:"created" firestore:"created"`
+	Updated     time.Time      `json:"updated" firestore:"updated" firestore:"updated"`
 }
 
 type AdjustmentType = int
@@ -74,67 +74,70 @@ const (
 	AdjustmentTypePercent = 1
 )
 
+// Contact represents a contact in the company.
 type Contact struct {
-	Id          ID
-	Name        string
-	CompanyName string
-	Phones      []string
-	Emails      []string
-	Websites    []string
-	Street      string
-	City        string
-	State       string
-	Zip         string
+	Id          ID       `json:"id" firestore:"id"`
+	Name        string   `json:"name" firestore:"name"`
+	CompanyName string   `json:"companyName" firestore:"companyName"`
+	Phones      []string `json:"phones" firestore:"phones"`
+	Emails      []string `json:"emails" firestore:"emails"`
+	Websites    []string `json:"websites" firestore:"websites"`
+	Street      string   `json:"street" firestore:"street"`
+	City        string   `json:"city" firestore:"city"`
+	State       string   `json:"state" firestore:"state"`
+	Zip         string   `json:"zip" firestore:"zip"`
 }
 
+// PrintableQuote represents a printable quote.
 type PrintableQuote struct {
-	Id                     ID
-	Code                   string
-	OrderNumber            string
-	Logo                   *Image
-	PrimaryBackgroundColor string
-	PrimaryTextColor       string
-	IssueDate              *time.Time
-	ExpirationDate         *time.Time
-	PaymentTerms           string
-	Notes                  string
-	Sender                 *Contact
-	BillTo                 *Contact
-	ShipTo                 *Contact
-	LineItems              []*PrintableLineItem
-	SubTotal               int
-	Adjustments            []*Adjustment
-	Total                  int
-	BalanceDue             int
-	BalanceDueOn           *time.Time
-	PayUrl                 string
-	Sent                   bool
-	SentOn                 *time.Time
-	Sold                   bool
-	SoldOn                 *time.Time
-	Created                time.Time
-	Updated                time.Time
-	Hidden                 bool
-	Locked                 bool
+	Id                     ID                   `json:"id" firestore:"id"`
+	Code                   string               `json:"code" firestore:"code"`
+	OrderNumber            string               `json:"orderNumber" firestore:"orderNumber"`
+	Logo                   *Image               `json:"logo" firestore:"logo"`
+	PrimaryBackgroundColor string               `json:"primaryBackgroundColor" firestore:"primaryBackgroundColor"`
+	PrimaryTextColor       string               `json:"primaryTextColor" firestore:"primaryTextColor"`
+	IssueDate              *time.Time           `json:"issueDate" firestore:"issueDate"`
+	ExpirationDate         *time.Time           `json:"expirationDate" firestore:"expirationDate"`
+	PaymentTerms           string               `json:"paymentTerms" firestore:"paymentTerms"`
+	Notes                  string               `json:"notes" firestore:"notes"`
+	Sender                 *Contact             `json:"sender" firestore:"sender"`
+	BillTo                 *Contact             `json:"billTo" firestore:"billTo"`
+	ShipTo                 *Contact             `json:"shipTo" firestore:"shipTo"`
+	LineItems              []*PrintableLineItem `json:"lineItems" firestore:"lineItems"`
+	SubTotal               int                  `json:"subTotal" firestore:"subTotal"`
+	Adjustments            []*Adjustment        `json:"adjustments" firestore:"adjustments"`
+	Total                  int                  `json:"total" firestore:"total"`
+	BalanceDue             int                  `json:"balanceDue" firestore:"balanceDue"`
+	BalanceDueOn           *time.Time           `json:"balanceDueOn" firestore:"balanceDueOn"`
+	PayUrl                 string               `json:"payUrl" firestore:"payUrl"`
+	Sent                   bool                 `json:"sent" firestore:"sent"`
+	SentOn                 *time.Time           `json:"sentOn" firestore:"sentOn"`
+	Sold                   bool                 `json:"sold" firestore:"sold"`
+	SoldOn                 *time.Time           `json:"soldOn" firestore:"soldOn"`
+	Created                time.Time            `json:"created" firestore:"created"`
+	Updated                time.Time            `json:"updated" firestore:"updated"`
+	Hidden                 bool                 `json:"hidden" firestore:"hidden"`
+	Locked                 bool                 `json:"locked" firestore:"locked"`
 }
 
+// PrintableLineItem represents a line item in the printable quote.
 type PrintableLineItem struct {
-	Id               ID
-	Depth            int
-	Number           string
-	SubItems         []*PrintableLineItem
-	Image            *Image
-	Description      string
-	Quantity         int
-	QuantitySuffix   string
-	QuantityPrefix   string
-	UnitPrice        int
-	UnitPriceSuffix  string
-	UnitPricePrefix  string
-	AmountOverridden bool
-	Amount           int
-	AmountSuffix     string
-	AmountPrefix     string
-	Created          time.Time
-	Updated          time.Time
+	Id               ID                   `json:"id" firestore:"id"`
+	Depth            int                  `json:"depth" firestore:"depth"`
+	Number           string               `json:"number" firestore:"number"`
+	SubItems         []*PrintableLineItem `json:"subItems" firestore:"subItems"`
+	Image            *Image               `json:"image" firestore:"image"`
+	Description      string               `json:"description" firestore:"description"`
+	Quantity         int                  `json:"quantity" firestore:"quantity"`
+	QuantitySuffix   string               `json:"quantitySuffix" firestore:"quantitySuffix"`
+	QuantityPrefix   string               `json:"quantityPrefix" firestore:"quantityPrefix"`
+	UnitPrice        int                  `json:"unitPrice" firestore:"unitPrice"`
+	UnitPriceSuffix  string               `json:"unitPriceSuffix" firestore:"unitPriceSuffix"`
+	UnitPricePrefix  string               `json:"unitPricePrefix" firestore:"unitPricePrefix"`
+	AmountOverridden bool                 `json:"amountOverridden" firestore:"amountOverridden"`
+	Amount           int                  `json:"amount" firestore:"amount"`
+	AmountSuffix     string               `json:"amountSuffix" firestore:"amountSuffix"`
+	AmountPrefix     string               `json:"amountPrefix" firestore:"amountPrefix"`
+	Created          time.Time            `json:"created" firestore:"created"`
+	Updated          time.Time            `json:"updated" firestore:"updated"`
 }
