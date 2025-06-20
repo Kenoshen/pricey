@@ -76,7 +76,7 @@ func (f *Firebase) get(ctx context.Context, collection, id string, dataOut any) 
 	if err != nil {
 		return err
 	}
-	result, err := f.fire.Collection(PricebookCollection).Doc(id).Get(ctx)
+	result, err := f.fire.Collection(collection).Doc(id).Get(ctx)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func update[T any](f *Firebase, ctx context.Context, collection, id string, fiel
 
 func (f *Firebase) updateHiddenForAll(ctx context.Context, hidden bool, docs []*firestore.DocumentSnapshot) error {
 	for _, doc := range docs {
-		_, err := doc.Ref.Update(ctx, []firestore.Update{{Path: "hidden", Value: true}, {Path: "updated", Value: time.Now()}})
+		_, err := doc.Ref.Update(ctx, []firestore.Update{{Path: "hidden", Value: hidden}, {Path: "updated", Value: time.Now()}})
 		if err != nil {
 			return err
 		}
