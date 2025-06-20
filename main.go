@@ -26,7 +26,7 @@ func New(store Store, auth Auth, pdfClient *gotenberg.Client) Pricey {
 		pdfClient: pdfClient,
 		Pricebook: &priceyPricebook{store},
 		Category:  &priceyCategory{store},
-		Item:      &priceyItem{store, &priceySubItem{store}},
+		Item:      &priceyItem{store, &priceySubItem{store}, &priceyPrice{store}},
 		Tag:       &priceyTag{store},
 		Image:     &priceyImage{store},
 		Quote: &priceyQuote{
@@ -182,6 +182,7 @@ func (v *priceyCategory) Recover(ctx context.Context, id ID) error {
 type priceyItem struct {
 	store   Store
 	SubItem *priceySubItem
+	Price   *priceyPrice
 }
 
 func (v *priceyItem) New(ctx context.Context, categoryId ID, name, description string) (*Item, error) {
