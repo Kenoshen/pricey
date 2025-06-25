@@ -5,11 +5,13 @@ import (
 	"errors"
 	"maps"
 	"reflect"
+	"slices"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
+	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -21,12 +23,13 @@ type Firebase struct {
 	ext  OrgGroupExtractor
 }
 
+type Collection string
+
 const (
-	PricebookCollection = "pricebook"
-	CategoryCollection  = "category"
-	ItemCollection      = "item"
-	TagCollection       = "tag"
-	PriceCollection     = "price"
+	PricebookCollection Collection = "pricebook"
+	CategoryCollection  Collection = "category"
+	ItemCollection      Collection = "item"
+	TagCollection       Collection = "tag"
 )
 
 var (
@@ -71,12 +74,12 @@ func (f *Firebase) CreateToken(ctx context.Context, orgId, groupId, userId ID, c
 // get is a wrapper around the firebase collection, doc, get methods and it
 // does some checks for values on the data to make sure that org and group ids
 // are present and match the context values
-func (f *Firebase) get(ctx context.Context, collection, id string, dataOut any) error {
+func (f *Firebase) get(ctx context.Context, collection Collection, id string, dataOut any) error {
 	orgId, groupId, err := f.ext(ctx)
 	if err != nil {
 		return err
 	}
-	result, err := f.fire.Collection(collection).Doc(id).Get(ctx)
+	result, err := f.fire.Collection(string(collection)).Doc(id).Get(ctx)
 	if err != nil {
 		return err
 	}
@@ -134,7 +137,7 @@ type field struct {
 	Value any
 }
 
-func update[T any](f *Firebase, ctx context.Context, collection, id string, fields ...field) (*T, error) {
+func update[T any](f *Firebase, ctx context.Context, collection Collection, id string, fields ...field) (*T, error) {
 	original := new(T)
 	err := f.get(ctx, collection, id, original)
 	if err != nil {
@@ -171,7 +174,7 @@ func update[T any](f *Firebase, ctx context.Context, collection, id string, fiel
 		}
 	}
 
-	_, err = f.fire.Collection(collection).Doc(id).Update(ctx, updates)
+	_, err = f.fire.Collection(string(collection)).Doc(id).Update(ctx, updates)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +219,7 @@ func (f *Firebase) CreatePricebook(ctx context.Context, name, description string
 	}
 
 	now := time.Now()
-	doc := f.fire.Collection(PricebookCollection).NewDoc()
+	doc := f.fire.Collection(string(PricebookCollection)).NewDoc()
 
 	data := Pricebook{
 		Id:          doc.ID,
@@ -246,7 +249,7 @@ func (f *Firebase) GetPricebook(ctx context.Context, id ID) (*Pricebook, error) 
 }
 
 func (f *Firebase) GetPricebooks(ctx context.Context) ([]*Pricebook, error) {
-	docs, err := f.query(ctx, PricebookCollection)
+	docs, err := f.query(ctx, string(PricebookCollection))
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +288,7 @@ func (f *Firebase) CreateCategory(ctx context.Context, pricebookId ID, name, des
 	}
 
 	now := time.Now()
-	doc := f.fire.Collection(CategoryCollection).NewDoc()
+	doc := f.fire.Collection(string(CategoryCollection)).NewDoc()
 
 	data := Category{
 		Id:          doc.ID,
@@ -316,7 +319,7 @@ func (f *Firebase) GetCategory(ctx context.Context, id ID) (*Category, error) {
 }
 
 func (f *Firebase) GetCategories(ctx context.Context, pricebookId ID) ([]*Category, error) {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -359,7 +362,7 @@ func (f *Firebase) DeleteCategory(ctx context.Context, id ID) error {
 }
 
 func (f *Firebase) DeletePricebookCategories(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -376,7 +379,7 @@ func (f *Firebase) RecoverCategory(ctx context.Context, id ID) error {
 }
 
 func (f *Firebase) RecoverPricebookCategories(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -396,7 +399,7 @@ func (f *Firebase) CreateItem(ctx context.Context, categoryId ID, name, descript
 	}
 
 	now := time.Now()
-	doc := f.fire.Collection(ItemCollection).NewDoc()
+	doc := f.fire.Collection(string(ItemCollection)).NewDoc()
 
 	data := Item{
 		Id:          doc.ID,
@@ -444,7 +447,7 @@ func (f *Firebase) GetSimpleItem(ctx context.Context, id ID) (*SimpleItem, error
 }
 
 func (f *Firebase) GetItemsInCategory(ctx context.Context, categoryId ID) ([]*Item, error) {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "categoryId", Operator: "==", Value: categoryId},
 	)
 	if err != nil {
@@ -477,49 +480,6 @@ func (f *Firebase) UpdateItemInfo(ctx context.Context, id ID, code, sku, name, d
 func (f *Firebase) UpdateItemCost(ctx context.Context, id ID, cost int) (*Item, error) {
 	return update[Item](f, ctx, ItemCollection, id,
 		field{"Cost", cost},
-	)
-}
-
-func (f *Firebase) AddItemPrice(ctx context.Context, id ID, priceId ID) (*Item, error) {
-	orig := &Item{}
-	err := f.get(ctx, ItemCollection, id, orig)
-	if err != nil {
-		return nil, err
-	}
-	list := orig.PriceIds
-	for _, elem := range list {
-		if elem == priceId {
-			// no need to update the database, this list already contains the value
-			return orig, nil
-		}
-	}
-	list = append(list, priceId)
-	return update[Item](f, ctx, ItemCollection, id,
-		field{"PriceIds", list},
-	)
-}
-
-func (f *Firebase) RemoveItemPrice(ctx context.Context, id ID, priceId ID) (*Item, error) {
-	orig := &Item{}
-	err := f.get(ctx, ItemCollection, id, orig)
-	if err != nil {
-		return nil, err
-	}
-	list := orig.PriceIds
-	found := false
-	for i, elem := range list {
-		if elem == priceId {
-			list = append(list[:i], list[i+1:]...)
-			found = true
-			break
-		}
-	}
-	if !found {
-		// if the value was not in the list, it does not need to be removed
-		return orig, nil
-	}
-	return update[Item](f, ctx, ItemCollection, id,
-		field{"PriceIds", list},
 	)
 }
 
@@ -567,7 +527,7 @@ func (f *Firebase) RemoveItemTag(ctx context.Context, id ID, tagId ID) (*Item, e
 }
 
 func (f *Firebase) RemoveTagFromItems(ctx context.Context, pricebookId, tagId ID) error {
-	docs, err := f.query(ctx, ItemCollection,
+	docs, err := f.query(ctx, string(ItemCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 		firestore.PropertyFilter{Path: "tagIds", Operator: "array-contains", Value: tagId},
 	)
@@ -609,7 +569,7 @@ func (f *Firebase) DeleteItem(ctx context.Context, id ID) error {
 }
 
 func (f *Firebase) DeleteCategoryItems(ctx context.Context, categoryId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "categoryId", Operator: "==", Value: categoryId},
 	)
 	if err != nil {
@@ -619,7 +579,7 @@ func (f *Firebase) DeleteCategoryItems(ctx context.Context, categoryId ID) error
 }
 
 func (f *Firebase) DeletePricebookItems(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -636,7 +596,7 @@ func (f *Firebase) RecoverItem(ctx context.Context, id ID) error {
 }
 
 func (f *Firebase) RecoverCategoryItems(ctx context.Context, categoryId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "categoryId", Operator: "==", Value: categoryId},
 	)
 	if err != nil {
@@ -646,7 +606,7 @@ func (f *Firebase) RecoverCategoryItems(ctx context.Context, categoryId ID) erro
 }
 
 func (f *Firebase) RecoverPricebookItems(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, CategoryCollection,
+	docs, err := f.query(ctx, string(CategoryCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -665,26 +625,26 @@ func (f *Firebase) AddSubItem(ctx context.Context, id ID, subItemId ID, quantity
 	if err != nil {
 		return nil, err
 	}
-	subItem := &Item{}
-	err = f.get(ctx, ItemCollection, subItemId, subItem)
-	if err != nil {
-		return nil, err
-	}
-	list := orig.SubItemIds
-	for _, elem := range list {
+	for _, elem := range orig.SubItems {
 		if elem.SubItemID == subItemId {
 			// no need to update the database, this list already contains the value
 			return orig, nil
 		}
 	}
+	subItem := &Item{}
+	err = f.get(ctx, ItemCollection, subItemId, subItem)
+	if err != nil {
+		return nil, err
+	}
+	list := slices.Clone(orig.SubItems)
 	var firstPriceId *ID
-	if len(subItem.PriceIds) > 0 {
-		tmp := subItem.PriceIds[0]
-		firstPriceId = &tmp
+	if len(subItem.Prices) > 0 {
+		tmp := subItem.Prices[0]
+		firstPriceId = &(tmp.Id)
 	}
 	list = append(list, SubItem{SubItemID: subItemId, Quantity: quantity, PriceId: firstPriceId})
 	return update[Item](f, ctx, ItemCollection, id,
-		field{"SubItemIds", list},
+		field{"SubItems", list},
 	)
 }
 
@@ -694,11 +654,11 @@ func (f *Firebase) UpdateSubItemQuantity(ctx context.Context, id ID, subItemId I
 	if err != nil {
 		return nil, err
 	}
-	list := orig.SubItemIds
+	list := slices.Clone(orig.SubItems)
 	found := false
 	for i, elem := range list {
 		if elem.SubItemID == subItemId {
-			orig.SubItemIds[i].Quantity = quantity
+			list[i].Quantity = quantity
 			found = true
 			break
 		}
@@ -708,7 +668,7 @@ func (f *Firebase) UpdateSubItemQuantity(ctx context.Context, id ID, subItemId I
 		return orig, nil
 	}
 	return update[Item](f, ctx, ItemCollection, id,
-		field{"SubItemIds", list},
+		field{"SubItems", list},
 	)
 }
 
@@ -724,8 +684,8 @@ func (f *Firebase) UpdateSubItemPrice(ctx context.Context, id ID, subItemId ID, 
 		return nil, err
 	}
 	found := false
-	for _, p := range subItem.PriceIds {
-		if p == subItemId {
+	for _, p := range subItem.Prices {
+		if p.Id == subItemId {
 			found = true
 			break
 		}
@@ -734,11 +694,11 @@ func (f *Firebase) UpdateSubItemPrice(ctx context.Context, id ID, subItemId ID, 
 		return nil, InvalidPriceIdError
 	}
 
-	list := orig.SubItemIds
+	list := slices.Clone(orig.SubItems)
 	found = false
 	for i, elem := range list {
 		if elem.SubItemID == subItemId {
-			orig.SubItemIds[i].PriceId = &priceId
+			list[i].PriceId = &priceId
 			found = true
 			break
 		}
@@ -748,7 +708,7 @@ func (f *Firebase) UpdateSubItemPrice(ctx context.Context, id ID, subItemId ID, 
 		return orig, nil
 	}
 	return update[Item](f, ctx, ItemCollection, id,
-		field{"SubItemIds", list},
+		field{"SubItems", list},
 	)
 }
 
@@ -758,7 +718,7 @@ func (f *Firebase) RemoveSubItem(ctx context.Context, id ID, subItemId ID) (*Ite
 	if err != nil {
 		return nil, err
 	}
-	list := orig.SubItemIds
+	list := slices.Clone(orig.SubItems)
 	found := false
 	for i, elem := range list {
 		if elem.SubItemID == subItemId {
@@ -772,7 +732,7 @@ func (f *Firebase) RemoveSubItem(ctx context.Context, id ID, subItemId ID) (*Ite
 		return orig, nil
 	}
 	return update[Item](f, ctx, ItemCollection, id,
-		field{"SubItemIds", list},
+		field{"SubItems", list},
 	)
 }
 
@@ -780,156 +740,111 @@ func (f *Firebase) RemoveSubItem(ctx context.Context, id ID, subItemId ID) (*Ite
 // PRICE
 // ////////////
 
-func (f *Firebase) CreatePrice(ctx context.Context, itemId ID, amount int) (*Price, error) {
-	orgId, groupId, err := f.ext(ctx)
+func (f *Firebase) AddItemPrice(ctx context.Context, itemId ID, amount int) (*Item, error) {
+	orig := &Item{}
+	err := f.get(ctx, ItemCollection, itemId, orig)
 	if err != nil {
 		return nil, err
 	}
-
-	item := &Item{}
-	err = f.get(ctx, item.Code, itemId, item)
-	if err != nil {
-		return nil, err
-	}
-
 	now := time.Now()
-	doc := f.fire.Collection(PriceCollection).NewDoc()
-
-	data := Price{
-		Id:          doc.ID,
-		OrgId:       orgId,
-		GroupId:     groupId,
-		ItemId:      itemId,
-		CategoryId:  item.CategoryId,
-		PricebookId: item.PricebookId,
+	list := slices.Clone(orig.Prices)
+	list = append(list, Price{
+		Id:          uuid.NewString(),
+		Name:        "",
+		Description: "",
 		Amount:      amount,
+		Prefix:      "",
+		Suffix:      "",
 		Created:     now,
 		Updated:     now,
-	}
-
-	_, err = doc.Create(ctx, data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data, nil
-}
-
-func (f *Firebase) GetPrice(ctx context.Context, id ID) (*Price, error) {
-	data := &Price{}
-	err := f.get(ctx, PriceCollection, id, data)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
-func (f *Firebase) GetPricesByItem(ctx context.Context, itemId ID) ([]*Price, error) {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "itemId", Operator: "==", Value: itemId},
+	})
+	return update[Item](f, ctx, ItemCollection, itemId,
+		field{"Prices", list},
 	)
+}
+
+func (f *Firebase) SetDefaultItemPrice(ctx context.Context, itemId ID, priceId ID) (*Item, error) {
+	orig := &Item{}
+	err := f.get(ctx, ItemCollection, itemId, orig)
 	if err != nil {
 		return nil, err
 	}
-	return docsToType[Price](docs)
-}
-
-func (f *Firebase) MovePricesByItem(ctx context.Context, itemId, categoryId ID) error {
-	other := &Category{}
-	err := f.get(ctx, CategoryCollection, categoryId, other)
-	if err != nil {
-		return err
-	}
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "itemId", Operator: "==", Value: itemId},
-	)
-	if err != nil {
-		return err
-	}
-	for _, doc := range docs {
-		_, err := doc.Ref.Update(ctx, []firestore.Update{{Path: "categoryId", Value: categoryId}, {Path: "updated", Value: time.Now()}})
-		if err != nil {
-			return err
+	list := slices.Clone(orig.Prices)
+	index := -1
+	var price Price
+	for i, elem := range list {
+		if elem.Id == priceId {
+			elem = price
+			list = append(list[:i], list[i+1:]...)
+			break
 		}
 	}
-	return nil
-}
-
-func (f *Firebase) UpdatePrice(ctx context.Context, p Price) (*Price, error) {
-	return update[Price](f, ctx, PriceCollection, p.Id,
-		field{Name: "Name", Value: p.Name},
-		field{Name: "Description", Value: p.Description},
-		field{Name: "Amount", Value: p.Amount},
-		field{Name: "Prefix", Value: p.Prefix},
-		field{Name: "Suffix", Value: p.Suffix},
-	)
-}
-
-func (f *Firebase) DeletePrice(ctx context.Context, id ID) error {
-	_, err := update[Price](f, ctx, PriceCollection, id,
-		field{Name: "Hidden", Value: true},
-	)
-	return err
-}
-
-func (f *Firebase) DeletePricesByItem(ctx context.Context, itemId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "itemId", Operator: "==", Value: itemId},
-	)
-	if err != nil {
-		return err
+	if index <= 0 {
+		// the value was not in the list or it was already the default, do nothing
+		return orig, nil
 	}
-	return f.updateHiddenForAll(ctx, true, docs)
+	// being the 0th element in the array means you are the default price
+	list = slices.Insert(list, 0, price)
+	return update[Item](f, ctx, ItemCollection, itemId,
+		field{"Prices", list},
+	)
 }
 
-func (f *Firebase) DeleteCategoryPrices(ctx context.Context, categoryId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "categoryId", Operator: "==", Value: categoryId},
-	)
+func (f *Firebase) UpdateItemPrice(ctx context.Context, itemId ID, p Price) (*Item, error) {
+	orig := &Item{}
+	err := f.get(ctx, ItemCollection, itemId, orig)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return f.updateHiddenForAll(ctx, true, docs)
+	list := slices.Clone(orig.Prices)
+	found := false
+	for i, elem := range list {
+		if elem.Id == p.Id {
+			list[i] = Price{
+				Id:          elem.Id,
+				Name:        p.Name,
+				Description: p.Description,
+				Amount:      p.Amount,
+				Prefix:      p.Prefix,
+				Suffix:      p.Suffix,
+				Created:     elem.Created,
+				Updated:     time.Now(),
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		// the id did not match any price in the list, do nothing
+		return orig, nil
+	}
+	return update[Item](f, ctx, ItemCollection, itemId,
+		field{"Prices", list},
+	)
 }
 
-func (f *Firebase) DeletePricebookPrices(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
-	)
+func (f *Firebase) RemoveItemPrice(ctx context.Context, itemId ID, id ID) (*Item, error) {
+	orig := &Item{}
+	err := f.get(ctx, ItemCollection, itemId, orig)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return f.updateHiddenForAll(ctx, true, docs)
-}
-
-func (f *Firebase) RecoverPricesByItem(ctx context.Context, itemId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "itemId", Operator: "==", Value: itemId},
+	list := slices.Clone(orig.Prices)
+	found := false
+	for i, elem := range list {
+		if elem.Id == id {
+			list = append(list[:i], list[i+1:]...)
+			found = true
+			break
+		}
+	}
+	if !found {
+		// if the value was not in the list, it does not need to be removed
+		return orig, nil
+	}
+	return update[Item](f, ctx, ItemCollection, id,
+		field{"Prices", list},
 	)
-	if err != nil {
-		return err
-	}
-	return f.updateHiddenForAll(ctx, false, docs)
-}
-
-func (f *Firebase) RecoverCategoryPrices(ctx context.Context, categoryId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "categoryId", Operator: "==", Value: categoryId},
-	)
-	if err != nil {
-		return err
-	}
-	return f.updateHiddenForAll(ctx, false, docs)
-}
-
-func (f *Firebase) RecoverPricebookPrices(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, PriceCollection,
-		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
-	)
-	if err != nil {
-		return err
-	}
-	return f.updateHiddenForAll(ctx, false, docs)
 }
 
 // ////////////
@@ -949,7 +864,7 @@ func (f *Firebase) CreateTag(ctx context.Context, pricebookId ID, name, descript
 	}
 
 	now := time.Now()
-	doc := f.fire.Collection(TagCollection).NewDoc()
+	doc := f.fire.Collection(string(TagCollection)).NewDoc()
 
 	data := Tag{
 		Id:              doc.ID,
@@ -982,7 +897,7 @@ func (f *Firebase) GetTag(ctx context.Context, id ID) (*Tag, error) {
 }
 
 func (f *Firebase) GetTags(ctx context.Context, pricebookId ID) ([]*Tag, error) {
-	docs, err := f.query(ctx, TagCollection,
+	docs, err := f.query(ctx, string(TagCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -1011,7 +926,7 @@ func (f *Firebase) DeleteTag(ctx context.Context, id ID) error {
 }
 
 func (f *Firebase) DeletePricebookTags(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, TagCollection,
+	docs, err := f.query(ctx, string(TagCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {
@@ -1021,7 +936,7 @@ func (f *Firebase) DeletePricebookTags(ctx context.Context, pricebookId ID) erro
 }
 
 func (f *Firebase) RecoverPricebookTags(ctx context.Context, pricebookId ID) error {
-	docs, err := f.query(ctx, TagCollection,
+	docs, err := f.query(ctx, string(TagCollection),
 		firestore.PropertyFilter{Path: "pricebookId", Operator: "==", Value: pricebookId},
 	)
 	if err != nil {

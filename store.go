@@ -44,8 +44,6 @@ type Store interface {
 	MoveItem(ctx context.Context, id ID, newCategoryId ID) (*Item, error)
 	UpdateItemInfo(ctx context.Context, id ID, code, sku, name, description string) (*Item, error)
 	UpdateItemCost(ctx context.Context, id ID, cost int) (*Item, error)
-	AddItemPrice(ctx context.Context, id ID, priceId ID) (*Item, error)
-	RemoveItemPrice(ctx context.Context, id ID, priceId ID) (*Item, error)
 	AddItemTag(ctx context.Context, id ID, tagId ID) (*Item, error)
 	RemoveItemTag(ctx context.Context, id ID, tagId ID) (*Item, error)
 	RemoveTagFromItems(ctx context.Context, pricebookId, tagId ID) error
@@ -72,18 +70,10 @@ type Store interface {
 	// PRICE
 	// ////////////
 
-	CreatePrice(ctx context.Context, itemId ID, amount int) (*Price, error)
-	GetPrice(ctx context.Context, id ID) (*Price, error)
-	GetPricesByItem(ctx context.Context, itemId ID) ([]*Price, error)
-	MovePricesByItem(ctx context.Context, itemId, categoryId ID) error
-	UpdatePrice(ctx context.Context, p Price) (*Price, error)
-	DeletePrice(ctx context.Context, id ID) error
-	DeletePricesByItem(ctx context.Context, itemId ID) error
-	DeleteCategoryPrices(ctx context.Context, categoryId ID) error
-	DeletePricebookPrices(ctx context.Context, pricebookId ID) error
-	RecoverPricesByItem(ctx context.Context, itemId ID) error
-	RecoverCategoryPrices(ctx context.Context, categoryId ID) error
-	RecoverPricebookPrices(ctx context.Context, pricebookId ID) error
+	AddItemPrice(ctx context.Context, itemId ID, amount int) (*Item, error)
+	SetDefaultItemPrice(ctx context.Context, itemId ID, priceId ID) (*Item, error)
+	UpdateItemPrice(ctx context.Context, itemId ID, p Price) (*Item, error)
+	RemoveItemPrice(ctx context.Context, itemId ID, priceId ID) (*Item, error)
 
 	// ////////////
 	// TAG

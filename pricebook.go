@@ -64,14 +64,14 @@ type Item struct {
 	PricebookId      ID        `json:"pricebookId" firestore:"pricebookId"`
 	CategoryId       ID        `json:"categoryId" firestore:"categoryId"`
 	ParentIds        []ID      `json:"parentIds" firestore:"parentIds"`
-	SubItemIds       []SubItem `json:"subItemIds" firestore:"subItemIds"`
+	TagIds           []ID      `json:"tagIds" firestore:"tagIds"`
+	SubItems         []SubItem `json:"subItems" firestore:"subItems"`
+	Prices           []Price   `json:"prices" firestore:"prices"`
 	Code             string    `json:"code" firestore:"code"`
 	SKU              string    `json:"sku" firestore:"sku"`
 	Name             string    `json:"name" firestore:"name"`
 	Description      string    `json:"description" firestore:"description"`
 	Cost             int       `json:"cost" firestore:"cost"`
-	PriceIds         []ID      `json:"priceIds" firestore:"priceIds"`
-	TagIds           []ID      `json:"tagIds" firestore:"tagIds"`
 	HideFromCustomer bool      `json:"hideFromCustomer" firestore:"hideFromCustomer"`
 	ImageId          ID        `json:"imageId" firestore:"imageId"`
 	ThumbnailId      ID        `json:"thumbnailId" firestore:"thumbnailId"`
@@ -121,11 +121,6 @@ type Tag struct {
 
 type Price struct {
 	Id          ID        `json:"id" firestore:"id"`
-	OrgId       ID        `json:"orgId" firestore:"orgId"`
-	GroupId     ID        `json:"groupId" firestore:"groupId"`
-	ItemId      ID        `json:"itemId" firestore:"itemId"`
-	CategoryId  ID        `json:"categoryId" firestore:"categoryId"`
-	PricebookId ID        `json:"pricebookId" firestore:"pricebookId"`
 	Name        string    `json:"name" firestore:"name"`
 	Description string    `json:"description" firestore:"description"`
 	Amount      int       `json:"amount" firestore:"amount"`
@@ -133,7 +128,6 @@ type Price struct {
 	Suffix      string    `json:"suffix" firestore:"suffix"`
 	Created     time.Time `json:"created" firestore:"created"`
 	Updated     time.Time `json:"updated" firestore:"updated"`
-	Hidden      bool      `json:"hidden" firestore:"hidden"`
 }
 
 /*

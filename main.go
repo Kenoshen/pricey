@@ -73,10 +73,6 @@ func (v *priceyPricebook) Delete(ctx context.Context, id ID) error {
 		if err != nil {
 			return err
 		}
-		err = v.store.DeletePricebookPrices(ctx, id)
-		if err != nil {
-			return err
-		}
 		err = v.store.DeletePricebookTags(ctx, id)
 		if err != nil {
 			return err
@@ -97,10 +93,6 @@ func (v *priceyPricebook) Recover(ctx context.Context, id ID) error {
 			return err
 		}
 		err = v.store.RecoverPricebookItems(ctx, id)
-		if err != nil {
-			return err
-		}
-		err = v.store.RecoverPricebookPrices(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -151,10 +143,6 @@ func (v *priceyCategory) Delete(ctx context.Context, id ID) error {
 		if err != nil {
 			return err
 		}
-		err = v.store.DeleteCategoryPrices(ctx, id)
-		if err != nil {
-			return err
-		}
 
 		return nil
 	})
@@ -167,10 +155,6 @@ func (v *priceyCategory) Recover(ctx context.Context, id ID) error {
 			return err
 		}
 		err = v.store.RecoverCategoryItems(ctx, id)
-		if err != nil {
-			return err
-		}
-		err = v.store.RecoverCategoryPrices(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -210,11 +194,6 @@ func (v *priceyItem) Move(ctx context.Context, id, categoryId ID) (*Item, error)
 			return err
 		}
 
-		err = v.store.MovePricesByItem(ctx, id, categoryId)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	})
 }
@@ -225,14 +204,6 @@ func (v *priceyItem) SetInfo(ctx context.Context, id ID, code, sku, name, descri
 
 func (v *priceyItem) SetCost(ctx context.Context, id ID, cost int) (*Item, error) {
 	return v.store.UpdateItemCost(ctx, id, cost)
-}
-
-func (v *priceyItem) AddPrice(ctx context.Context, id, priceId ID) (*Item, error) {
-	return v.store.AddItemPrice(ctx, id, priceId)
-}
-
-func (v *priceyItem) RemovePrice(ctx context.Context, id, priceId ID) (*Item, error) {
-	return v.store.RemoveItemPrice(ctx, id, priceId)
 }
 
 func (v *priceyItem) AddTag(ctx context.Context, id, tagId ID) (*Item, error) {
@@ -261,12 +232,6 @@ func (v *priceyItem) Delete(ctx context.Context, id ID) error {
 		if err != nil {
 			return err
 		}
-
-		err = v.store.DeletePricesByItem(ctx, id)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	})
 }
@@ -277,12 +242,6 @@ func (v *priceyItem) Recover(ctx context.Context, id ID) error {
 		if err != nil {
 			return err
 		}
-
-		err = v.store.RecoverPricesByItem(ctx, id)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	})
 }
@@ -311,24 +270,20 @@ type priceyPrice struct {
 	store Store
 }
 
-func (v *priceyPrice) New(ctx context.Context, itemId ID, amount int) (*Price, error) {
-	return v.store.CreatePrice(ctx, itemId, amount)
+func (v *priceyPrice) Add(ctx context.Context, itemId ID, amount int) (*Item, error) {
+	return v.store.AddItemPrice(ctx, itemId, amount)
 }
 
-func (v *priceyPrice) Get(ctx context.Context, id ID) (*Price, error) {
-	return v.store.GetPrice(ctx, id)
+func (v *priceyPrice) MakeDefault(ctx context.Context, itemId ID, id ID) (*Item, error) {
+	return v.store.SetDefaultItemPrice(ctx, itemId, id)
 }
 
-func (v *priceyPrice) Item(ctx context.Context, itemId ID) ([]*Price, error) {
-	return v.store.GetPricesByItem(ctx, itemId)
+func (v *priceyPrice) Update(ctx context.Context, itemId ID, p Price) (*Item, error) {
+	return v.store.UpdateItemPrice(ctx, itemId, p)
 }
 
-func (v *priceyPrice) Update(ctx context.Context, p Price) (*Price, error) {
-	return v.store.UpdatePrice(ctx, p)
-}
-
-func (v *priceyPrice) Delete(ctx context.Context, id ID) error {
-	return v.store.DeletePrice(ctx, id)
+func (v *priceyPrice) Delete(ctx context.Context, itemId ID, id ID) (*Item, error) {
+	return v.store.RemoveItemPrice(ctx, itemId, id)
 }
 
 type priceyTag struct {
