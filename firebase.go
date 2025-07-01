@@ -327,7 +327,7 @@ func (f *Firebase) ClearPricebookCustomValueConfig(ctx context.Context, configId
 // CATEGORY
 // ////////////
 
-func (f *Firebase) CreateCategory(ctx context.Context, pricebookId ID, name, description string) (*Category, error) {
+func (f *Firebase) CreateCategory(ctx context.Context, pricebookId ID, parentId *ID, name, description string) (*Category, error) {
 	orgId, groupId, err := f.ext(ctx)
 	if err != nil {
 		return nil, err
@@ -341,6 +341,7 @@ func (f *Firebase) CreateCategory(ctx context.Context, pricebookId ID, name, des
 		OrgId:       orgId,
 		GroupId:     groupId,
 		PricebookId: pricebookId,
+		ParentId:    parentId,
 		Name:        name,
 		Description: description,
 		Created:     now,
@@ -394,12 +395,14 @@ func (f *Firebase) UpdateCategoryCustomValues(ctx context.Context, id ID, custom
 	)
 }
 
-func (f *Firebase) MoveCategory(ctx context.Context, id ID, parentId ID) (*Category, error) {
+func (f *Firebase) MoveCategory(ctx context.Context, id ID, parentId *ID) (*Category, error) {
 	// check that the parentId is a valid collection and is owned by this user
-	other := &Category{}
-	err := f.get(ctx, CategoryCollection, parentId, other)
-	if err != nil {
-		return nil, err
+	if parentId != nil {
+		other := &Category{}
+		err := f.get(ctx, CategoryCollection, *parentId, other)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return update[Category](f, ctx, CategoryCollection, id,
 		field{"ParentId", parentId},

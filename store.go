@@ -23,13 +23,13 @@ type Store interface {
 	// CATEGORY
 	// ////////////
 
-	CreateCategory(ctx context.Context, pricebookId ID, name, description string) (*Category, error)
+	CreateCategory(ctx context.Context, pricebookId ID, parentId *ID, name, description string) (*Category, error)
 	GetCategory(ctx context.Context, id ID) (*Category, error)
 	GetCategories(ctx context.Context, pricebookId ID) ([]*Category, error)
 	UpdateCategoryInfo(ctx context.Context, id ID, name, description string) (*Category, error)
 	UpdateCategoryImage(ctx context.Context, id ID, imageId, thumbnailId ID) (*Category, error)
 	UpdateCategoryCustomValues(ctx context.Context, id ID, customValuesId *ID) (*Category, error)
-	MoveCategory(ctx context.Context, id ID, parentId ID) (*Category, error)
+	MoveCategory(ctx context.Context, id ID, parentId *ID) (*Category, error)
 	DeleteCategory(ctx context.Context, id ID) error
 	DeletePricebookCategories(ctx context.Context, pricebookId ID) error
 	RecoverCategory(ctx context.Context, id ID) error

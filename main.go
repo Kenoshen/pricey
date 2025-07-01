@@ -111,8 +111,8 @@ type priceyCategory struct {
 	store Store
 }
 
-func (v *priceyCategory) New(ctx context.Context, pricebookId ID, name, description string) (*Category, error) {
-	return v.store.CreateCategory(ctx, pricebookId, name, description)
+func (v *priceyCategory) New(ctx context.Context, pricebookId ID, parentId *ID, name string, description string) (*Category, error) {
+	return v.store.CreateCategory(ctx, pricebookId, parentId, name, description)
 }
 
 func (v *priceyCategory) Get(ctx context.Context, id ID) (*Category, error) {
@@ -135,7 +135,7 @@ func (v *priceyCategory) SetImage(ctx context.Context, id, imageId, thumbnailId 
 	return v.store.UpdateCategoryImage(ctx, id, imageId, thumbnailId)
 }
 
-func (v *priceyCategory) Move(ctx context.Context, id, parentId ID) (*Category, error) {
+func (v *priceyCategory) Move(ctx context.Context, id ID, parentId *ID) (*Category, error) {
 	return v.store.MoveCategory(ctx, id, parentId)
 }
 
