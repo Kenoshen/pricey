@@ -8,27 +8,29 @@ import (
 )
 
 type Pricey struct {
-	store     Store
-	pdfClient *gotenberg.Client
-	Pricebook *priceyPricebook
-	Category  *priceyCategory
-	Item      *priceyItem
-	Tag       *priceyTag
-	Image     *priceyImage
-	Quote     *priceyQuote
+	store       Store
+	pdfClient   *gotenberg.Client
+	Pricebook   *priceyPricebook
+	Category    *priceyCategory
+	Item        *priceyItem
+	Tag         *priceyTag
+	CustomValue *priceyCustomValueConfig
+	Image       *priceyImage
+	Quote       *priceyQuote
 	Auth
 }
 
 func New(store Store, auth Auth, pdfClient *gotenberg.Client) Pricey {
 	return Pricey{
-		store:     store,
-		Auth:      auth,
-		pdfClient: pdfClient,
-		Pricebook: &priceyPricebook{store},
-		Category:  &priceyCategory{store},
-		Item:      &priceyItem{store, &priceySubItem{store}, &priceyPrice{store}},
-		Tag:       &priceyTag{store},
-		Image:     &priceyImage{store},
+		store:       store,
+		Auth:        auth,
+		pdfClient:   pdfClient,
+		Pricebook:   &priceyPricebook{store},
+		Category:    &priceyCategory{store},
+		Item:        &priceyItem{store, &priceyCustomValue{store}, &priceySubItem{store}, &priceyPrice{store}},
+		Tag:         &priceyTag{store},
+		CustomValue: &priceyCustomValueConfig{store, &priceyCustomValueConfigDescriptor{store}},
+		Image:       &priceyImage{store},
 		Quote: &priceyQuote{
 			store:      store,
 			LineItem:   &priceyLineItem{store},
@@ -164,9 +166,10 @@ func (v *priceyCategory) Recover(ctx context.Context, id ID) error {
 }
 
 type priceyItem struct {
-	store   Store
-	SubItem *priceySubItem
-	Price   *priceyPrice
+	store       Store
+	CustomValue *priceyCustomValue
+	SubItem     *priceySubItem
+	Price       *priceyPrice
 }
 
 func (v *priceyItem) New(ctx context.Context, categoryId ID, name, description string) (*Item, error) {
@@ -244,6 +247,18 @@ func (v *priceyItem) Recover(ctx context.Context, id ID) error {
 		}
 		return nil
 	})
+}
+
+type priceyCustomValue struct {
+	store Store
+}
+
+func (v *priceyCustomValue) Set(ctx context.Context, id ID, key ID, value string) (*Item, error) {
+	return v.store.SetItemCustomValue(ctx, id, key, value)
+}
+
+func (v *priceyCustomValue) Delete(ctx context.Context, id ID, key ID) (*Item, error) {
+	return v.store.DeleteItemCustomValue(ctx, id, key)
 }
 
 type priceySubItem struct {
@@ -332,6 +347,55 @@ func (v *priceyTag) Delete(ctx context.Context, id ID) error {
 
 		return nil
 	})
+}
+
+type priceyCustomValueConfig struct {
+	store      Store
+	Descriptor *priceyCustomValueConfigDescriptor
+}
+
+func (v *priceyCustomValueConfig) New(ctx context.Context, name string, description string) (*CustomValueConfig, error) {
+	return v.store.CreateCustomValueConfig(ctx, name, description)
+}
+
+func (v *priceyCustomValueConfig) Get(ctx context.Context, id ID) (*CustomValueConfig, error) {
+	return v.store.GetCustomValueConfig(ctx, id)
+}
+
+func (v *priceyCustomValueConfig) Update(ctx context.Context, id ID, name string, description string) (*CustomValueConfig, error) {
+	return v.store.UpdateCustomValueConfigInfo(ctx, id, name, description)
+}
+
+func (v *priceyCustomValueConfig) Delete(ctx context.Context, id ID) error {
+	err := v.store.ClearCategoryCustomValueConfig(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = v.store.ClearPricebookCustomValueConfig(ctx, id)
+	if err != nil {
+		return err
+	}
+	err = v.store.DeleteCustomValueConfig(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type priceyCustomValueConfigDescriptor struct {
+	store Store
+}
+
+func (v *priceyCustomValueConfigDescriptor) New(ctx context.Context, id ID, key ID, label string, defaultValue string, valueType CustomValueType) (*CustomValueConfig, error) {
+	return v.store.AddCustomValueConfigDescriptor(ctx, id, key, label, defaultValue, valueType)
+}
+
+func (v *priceyCustomValueConfigDescriptor) Update(ctx context.Context, id ID, key ID, label string, defaultValue string) (*CustomValueConfig, error) {
+	return v.store.UpdateCustomValueConfigDescriptor(ctx, id, key, label, defaultValue)
+}
+
+func (v *priceyCustomValueConfigDescriptor) Delete(ctx context.Context, id ID, key ID) (*CustomValueConfig, error) {
+	return v.store.DeleteCustomValueConfigDescriptor(ctx, id, key)
 }
 
 type priceyImage struct {

@@ -13,6 +13,8 @@ type Pricebook struct {
 	OrgId ID `json:"orgId" firestore:"orgId"`
 	// GroupId identifier of the group this pricebook belongs to.
 	GroupId ID `json:"groupId" firestore:"groupId"`
+	// CustomValueConfigId identifier of the custom values config this pricebook uses for its items
+	CustomValueConfigId *ID `json:"customValueConfigId" firestore:"customValueConfigId"`
 	// Name of the pricebook.
 	Name string `json:"name" firestore:"name" validate:"required,min=2,max=100"`
 	// Description of the pricebook.
@@ -39,6 +41,8 @@ type Category struct {
 	ParentId *ID `json:"parentId" firestore:"parentId"`
 	// PricebookId pricebook that contains this category
 	PricebookId ID `json:"pricebookId" firestore:"pricebookId"`
+	// CustomValueConfigId identifier of the custom values config this category uses for its items (overwrites the pricebook level)
+	CustomValueConfigId *ID `json:"customValueConfigId" firestore:"customValueConfigId"`
 	// Name human-readable name of the category
 	Name string `json:"name" firestore:"name"`
 	// Description optional brief description of the category
@@ -58,26 +62,57 @@ type Category struct {
 }
 
 type Item struct {
-	Id               ID        `json:"id" firestore:"id"`
-	OrgId            ID        `json:"orgId" firestore:"orgId"`
-	GroupId          ID        `json:"groupId" firestore:"groupId"`
-	PricebookId      ID        `json:"pricebookId" firestore:"pricebookId"`
-	CategoryId       ID        `json:"categoryId" firestore:"categoryId"`
-	ParentIds        []ID      `json:"parentIds" firestore:"parentIds"`
-	TagIds           []ID      `json:"tagIds" firestore:"tagIds"`
-	SubItems         []SubItem `json:"subItems" firestore:"subItems"`
-	Prices           []Price   `json:"prices" firestore:"prices"`
-	Code             string    `json:"code" firestore:"code"`
-	SKU              string    `json:"sku" firestore:"sku"`
-	Name             string    `json:"name" firestore:"name"`
-	Description      string    `json:"description" firestore:"description"`
-	Cost             int       `json:"cost" firestore:"cost"`
-	HideFromCustomer bool      `json:"hideFromCustomer" firestore:"hideFromCustomer"`
-	ImageId          ID        `json:"imageId" firestore:"imageId"`
-	ThumbnailId      ID        `json:"thumbnailId" firestore:"thumbnailId"`
-	Created          time.Time `json:"created" firestore:"created"`
-	Updated          time.Time `json:"updated" firestore:"updated"`
-	Hidden           bool      `json:"hidden" firestore:"hidden"`
+	Id               ID            `json:"id" firestore:"id"`
+	OrgId            ID            `json:"orgId" firestore:"orgId"`
+	GroupId          ID            `json:"groupId" firestore:"groupId"`
+	PricebookId      ID            `json:"pricebookId" firestore:"pricebookId"`
+	CategoryId       ID            `json:"categoryId" firestore:"categoryId"`
+	ParentIds        []ID          `json:"parentIds" firestore:"parentIds"`
+	TagIds           []ID          `json:"tagIds" firestore:"tagIds"`
+	SubItems         []SubItem     `json:"subItems" firestore:"subItems"`
+	Prices           []Price       `json:"prices" firestore:"prices"`
+	Code             string        `json:"code" firestore:"code"`
+	SKU              string        `json:"sku" firestore:"sku"`
+	Name             string        `json:"name" firestore:"name"`
+	Description      string        `json:"description" firestore:"description"`
+	Cost             int           `json:"cost" firestore:"cost"`
+	HideFromCustomer bool          `json:"hideFromCustomer" firestore:"hideFromCustomer"`
+	ImageId          ID            `json:"imageId" firestore:"imageId"`
+	ThumbnailId      ID            `json:"thumbnailId" firestore:"thumbnailId"`
+	Created          time.Time     `json:"created" firestore:"created"`
+	Updated          time.Time     `json:"updated" firestore:"updated"`
+	Hidden           bool          `json:"hidden" firestore:"hidden"`
+	CustomValues     []CustomValue `json:"customValues" firestore:"customValues"`
+}
+
+type CustomValue struct {
+	Key   ID     `json:"key" firestore:"key"`
+	Value string `json:"value" firestore:"value"`
+}
+
+type CustomValueType = string
+
+const (
+	CustomValueTypeNumber CustomValueType = "number"
+	CustomValueTypeString CustomValueType = "string"
+)
+
+type CustomValueConfig struct {
+	Id          ID                      `json:"id" firestore:"id"`
+	OrgId       ID                      `json:"orgId" firestore:"orgId"`
+	GroupId     ID                      `json:"groupId" firestore:"groupId"`
+	Name        string                  `json:"name" firestore:"name"`
+	Description string                  `json:"description" firestore:"description"`
+	Descriptors []CustomValueDescriptor `json:"descriptors" firestore:"descriptors"`
+	Created     time.Time               `json:"created" firestore:"created"`
+	Updated     time.Time               `json:"updated" firestore:"updated"`
+}
+
+type CustomValueDescriptor struct {
+	Key          ID              `json:"key" firestore:"key"`
+	Label        string          `json:"label" firestore:"label"`
+	DefaultValue string          `json:"defaultValue" firestore:"defaultValue"`
+	ValueType    CustomValueType `json:"valueType" firestore:"valueType"`
 }
 
 type SimpleItem struct {

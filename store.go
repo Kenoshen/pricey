@@ -17,6 +17,7 @@ type Store interface {
 	UpdatePricebook(ctx context.Context, pb Pricebook) (*Pricebook, error)
 	DeletePricebook(ctx context.Context, id ID) error
 	RecoverPricebook(ctx context.Context, id ID) error
+	ClearPricebookCustomValueConfig(ctx context.Context, configId ID) error
 
 	// ////////////
 	// CATEGORY
@@ -27,11 +28,13 @@ type Store interface {
 	GetCategories(ctx context.Context, pricebookId ID) ([]*Category, error)
 	UpdateCategoryInfo(ctx context.Context, id ID, name, description string) (*Category, error)
 	UpdateCategoryImage(ctx context.Context, id ID, imageId, thumbnailId ID) (*Category, error)
+	UpdateCategoryCustomValues(ctx context.Context, id ID, customValuesId *ID) (*Category, error)
 	MoveCategory(ctx context.Context, id ID, parentId ID) (*Category, error)
 	DeleteCategory(ctx context.Context, id ID) error
 	DeletePricebookCategories(ctx context.Context, pricebookId ID) error
 	RecoverCategory(ctx context.Context, id ID) error
 	RecoverPricebookCategories(ctx context.Context, pricebookId ID) error
+	ClearCategoryCustomValueConfig(ctx context.Context, configId ID) error
 
 	// ////////////
 	// ITEMS
@@ -56,6 +59,8 @@ type Store interface {
 	RecoverItem(ctx context.Context, id ID) error
 	RecoverCategoryItems(ctx context.Context, categoryId ID) error
 	RecoverPricebookItems(ctx context.Context, pricebookId ID) error
+	SetItemCustomValue(ctx context.Context, itemId ID, key ID, value string) (*Item, error)
+	DeleteItemCustomValue(ctx context.Context, itemId ID, key ID) (*Item, error)
 
 	// ////////////
 	// SUB ITEM
@@ -87,6 +92,18 @@ type Store interface {
 	DeleteTag(ctx context.Context, id ID) error
 	DeletePricebookTags(ctx context.Context, id ID) error
 	RecoverPricebookTags(ctx context.Context, id ID) error
+
+	// ////////////
+	// CUSTOM VALUES
+	// ////////////
+
+	CreateCustomValueConfig(ctx context.Context, name string, description string) (*CustomValueConfig, error)
+	GetCustomValueConfig(ctx context.Context, id ID) (*CustomValueConfig, error)
+	UpdateCustomValueConfigInfo(ctx context.Context, id ID, name string, description string) (*CustomValueConfig, error)
+	AddCustomValueConfigDescriptor(ctx context.Context, id ID, key ID, label string, defaultValue string, valueType CustomValueType) (*CustomValueConfig, error)
+	UpdateCustomValueConfigDescriptor(ctx context.Context, id ID, key ID, label string, defaultValue string) (*CustomValueConfig, error)
+	DeleteCustomValueConfigDescriptor(ctx context.Context, id ID, key ID) (*CustomValueConfig, error)
+	DeleteCustomValueConfig(ctx context.Context, id ID) error
 
 	// ////////////
 	// IMAGE
