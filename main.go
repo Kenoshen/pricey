@@ -127,6 +127,10 @@ func (v *priceyCategory) SetInfo(ctx context.Context, id ID, name, description s
 	return v.store.UpdateCategoryInfo(ctx, id, name, description)
 }
 
+func (v *priceyCategory) SetCustomValues(ctx context.Context, id ID, configId *ID) (*Category, error) {
+	return v.store.UpdateCategoryCustomValues(ctx, id, configId)
+}
+
 func (v *priceyCategory) SetImage(ctx context.Context, id, imageId, thumbnailId ID) (*Category, error) {
 	return v.store.UpdateCategoryImage(ctx, id, imageId, thumbnailId)
 }
