@@ -147,12 +147,34 @@ func update[T any](f *Firebase, ctx context.Context, collection Collection, id s
 		return nil, err
 	}
 
+	updates := innerUpdate(original, time.Now(), fields...)
+	if len(updates) == 0 {
+		return original, nil
+	}
+
+	_, err = f.fire.Collection(string(collection)).Doc(id).Update(ctx, updates)
+	if err != nil {
+		return nil, err
+	}
+	return original, nil
+}
+
+func innerUpdate[T any](original *T, now time.Time, fields ...field) []firestore.Update {
 	var updates []firestore.Update
 	ogV := reflect.ValueOf(original).Elem()
 	ogT := reflect.TypeOf(original).Elem()
 	for _, newField := range fields {
 		ogField := ogV.FieldByName(newField.Name)
-		if ogField.Interface() != newField.Value {
+		a := ogField.Interface()
+		b := newField.Value
+		equal := false
+		switch ogField.Kind() {
+		case reflect.Slice:
+			equal = reflect.DeepEqual(a, b)
+		default:
+			equal = a == b
+		}
+		if !equal {
 			fieldType, ok := ogT.FieldByName(newField.Name)
 			if !ok {
 				continue
@@ -164,11 +186,10 @@ func update[T any](f *Firebase, ctx context.Context, collection Collection, id s
 		}
 	}
 	if len(updates) == 0 {
-		return original, nil
+		return nil
 	}
 
 	updatedField := ogV.FieldByName("Updated")
-	now := time.Now()
 	if updatedField.CanSet() {
 		updatedFieldT, ok := ogT.FieldByName("Updated")
 		if ok {
@@ -176,12 +197,7 @@ func update[T any](f *Firebase, ctx context.Context, collection Collection, id s
 			updatedField.Set(reflect.ValueOf(now))
 		}
 	}
-
-	_, err = f.fire.Collection(string(collection)).Doc(id).Update(ctx, updates)
-	if err != nil {
-		return nil, err
-	}
-	return original, nil
+	return updates
 }
 
 func (f *Firebase) updateHiddenForAll(ctx context.Context, hidden bool, docs []*firestore.DocumentSnapshot) error {

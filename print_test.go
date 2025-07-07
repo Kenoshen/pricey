@@ -2,7 +2,9 @@ package pricey
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"testing"
@@ -12,6 +14,10 @@ import (
 )
 
 func TestQuoteToPrintableQuote(t *testing.T) {
+	if !isPortInUse(3000) {
+		t.Skipf("Gotenberg port was not in use, likely gotenberg is not running, skipping")
+		return
+	}
 	m := func(tm time.Time) *time.Time {
 		return &tm
 	}
@@ -361,6 +367,10 @@ func TestQuoteToPrintableQuote(t *testing.T) {
 }
 
 func TestPrintableQuotePDF(t *testing.T) {
+	if !isPortInUse(3000) {
+		t.Skipf("Gotenberg port was not in use, likely gotenberg is not running, skipping")
+		return
+	}
 	os.MkdirAll("tmp", os.ModePerm)
 	pdf, err := os.Create("tmp/test_standard_template.pdf")
 	if err != nil {
@@ -514,4 +524,19 @@ func TestPrintableQuotePDF(t *testing.T) {
 		t.Error(err)
 		return
 	}
+}
+
+func isPortInUse(port int) bool {
+	address := fmt.Sprintf("localhost:%d", port)
+	timeout := 1 * time.Second // Set a reasonable timeout
+
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		// If there's an error, the port is likely not in use or unreachable.
+		// Common errors include "connection refused" or "timeout".
+		return false
+	}
+	defer conn.Close() // Close the connection if successful
+
+	return true // Connection successful, port is in use
 }
