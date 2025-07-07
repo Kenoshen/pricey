@@ -349,6 +349,19 @@ func (f *Firebase) CreateCategory(ctx context.Context, pricebookId ID, parentId 
 		return nil, err
 	}
 
+	pb := Pricebook{}
+	err = f.get(ctx, PricebookCollection, pricebookId, &pb)
+	if err != nil {
+		return nil, err
+	}
+	if parentId != nil {
+		parent := Category{}
+		err = f.get(ctx, CategoryCollection, *parentId, &parent)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	now := time.Now()
 	doc := f.fire.Collection(string(CategoryCollection)).NewDoc()
 
@@ -485,6 +498,12 @@ func (f *Firebase) CreateItem(ctx context.Context, categoryId ID, name, descript
 		return nil, err
 	}
 
+	category := Category{}
+	err = f.get(ctx, CategoryCollection, categoryId, &category)
+	if err != nil {
+		return nil, err
+	}
+
 	now := time.Now()
 	doc := f.fire.Collection(string(ItemCollection)).NewDoc()
 
@@ -493,6 +512,7 @@ func (f *Firebase) CreateItem(ctx context.Context, categoryId ID, name, descript
 		OrgId:       orgId,
 		GroupId:     groupId,
 		CategoryId:  categoryId,
+		PricebookId: category.PricebookId,
 		Name:        name,
 		Description: description,
 		Created:     now,
