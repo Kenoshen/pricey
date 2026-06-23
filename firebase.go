@@ -1251,6 +1251,10 @@ func (f *Firebase) DeleteImage(ctx context.Context, id ID) error {
 // QUOTE
 // ////////////
 
+func (f *Firebase) GetQuoteSummaries(ctx context.Context) ([]*QuoteSummary, error) {
+	return nil, nil
+}
+
 func (f *Firebase) CreateQuote(ctx context.Context) (*Quote, error) {
 	// TODO: implement me
 	return nil, nil

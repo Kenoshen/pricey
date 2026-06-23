@@ -402,3 +402,33 @@ func (v *priceyPrint) StandardHTML(ctx context.Context, id ID, w io.Writer) erro
 	}
 	return v.standardTemplate.Execute(w, q)
 }
+
+// GetPublicPrintableQuote loads a fully assembled quote for public access.
+// The quote must be sent and not hidden; no tenant auth is required.
+func (v *priceyPrint) GetPublicPrintableQuote(ctx context.Context, id ID) (*PrintableQuote, error) {
+	publicCtx := WithPublicAccess(ctx)
+	q, err := v.store.GetQuote(publicCtx, id)
+	if err != nil {
+		return nil, err
+	}
+	if !q.Sent || q.Hidden {
+		return nil, fmt.Errorf("quote not found")
+	}
+	return v.GetPrintableQuote(publicCtx, id)
+}
+
+// FromHTML converts pre-rendered HTML to PDF via Gotenberg.
+// Use this when you want to render your own HTML template (e.g. a Templ
+// component) and still leverage Gotenberg for the PDF conversion step.
+func (v *priceyPrint) FromHTML(ctx context.Context, html io.Reader, w io.Writer) error {
+	if v.pdfClient == nil {
+		return fmt.Errorf("PDF generation requires Gotenberg; set GOTENBERG_URL")
+	}
+	resp, err := print(v.pdfClient, html)
+	if err != nil {
+		return err
+	}
+	defer resp.Close()
+	_, err = io.Copy(w, resp)
+	return err
+}

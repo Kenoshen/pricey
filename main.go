@@ -434,6 +434,10 @@ type priceyQuote struct {
 	Print      *priceyPrint
 }
 
+func (v *priceyQuote) List(ctx context.Context) ([]*QuoteSummary, error) {
+	return v.store.GetQuoteSummaries(ctx)
+}
+
 func (v *priceyQuote) New(ctx context.Context) (*Quote, error) {
 	return v.store.CreateQuote(ctx)
 }
@@ -546,6 +550,13 @@ func (v *priceyQuote) SetSold(ctx context.Context, id ID, sold bool) (*Quote, er
 		}
 		return nil
 	})
+}
+
+// Accept marks a quote as sold for public (unauthenticated) acceptance.
+// The quote must be sent; no tenant auth is required.
+func (v *priceyQuote) Accept(ctx context.Context, id ID) error {
+	_, err := v.SetSold(WithPublicAccess(ctx), id, true)
+	return err
 }
 
 func (v *priceyQuote) Lock(ctx context.Context, id ID) (*Quote, error) {

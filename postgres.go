@@ -259,10 +259,23 @@ func pgxRowToContact(row pgx.CollectableRow) (*Contact, error) {
 	return &c, nil
 }
 
+// publicAccessKey is a context key that bypasses tenant auth in the Postgres store.
+type publicAccessKey struct{}
+
+// WithPublicAccess returns a context that skips tenant auth checks in the
+// pricey Postgres store. Use only for unauthenticated endpoints where the
+// resource ID (e.g. quote ID) serves as the access credential.
+func WithPublicAccess(ctx context.Context) context.Context {
+	return context.WithValue(ctx, publicAccessKey{}, true)
+}
+
 // authCheck verifies that org_id and group_id on the retrieved row match the
 // context values. Returns UnauthorizedOrgError / UnauthorizedGroupError on
 // mismatch.
 func (p *Postgres) authCheck(ctx context.Context, rowOrgId, rowGroupId string) error {
+	if ctx.Value(publicAccessKey{}) == true {
+		return nil
+	}
 	orgId, groupId, err := p.ext(ctx)
 	if err != nil {
 		return err
@@ -1515,6 +1528,31 @@ func (p *Postgres) getImage(ctx context.Context, id ID) (*Image, error) {
 // ─────────────────────────────────────────────
 
 const quoteCols = `id, code, order_number, logo_id, primary_background_color, primary_text_color, issue_date, expiration_date, payment_terms, notes, sender_id, bill_to_id, ship_to_id, line_item_ids, sub_total, adjustment_ids, total, balance_due, balance_percent_due, balance_due_on, pay_url, sent, sent_on, sold, sold_on, created, updated, hidden, locked`
+
+func (p *Postgres) GetQuoteSummaries(ctx context.Context) ([]*QuoteSummary, error) {
+	orgId, groupId, err := p.ext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := p.db.Query(ctx, `
+		SELECT q.id, q.code, COALESCE(c.name, '') AS bill_to_name,
+		       q.total, q.sent, q.sold, q.locked, q.created, q.updated
+		FROM quotes q
+		LEFT JOIN contacts c ON c.id = q.bill_to_id
+		WHERE q.org_id = $1 AND q.group_id = $2 AND q.hidden = false
+		ORDER BY q.created DESC
+	`, orgId, groupId)
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (*QuoteSummary, error) {
+		var s QuoteSummary
+		if err := row.Scan(&s.Id, &s.Code, &s.BillToName, &s.Total, &s.Sent, &s.Sold, &s.Locked, &s.Created, &s.Updated); err != nil {
+			return nil, err
+		}
+		return &s, nil
+	})
+}
 
 func (p *Postgres) CreateQuote(ctx context.Context) (*Quote, error) {
 	orgId, groupId, err := p.ext(ctx)

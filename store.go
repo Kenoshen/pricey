@@ -119,6 +119,7 @@ type Store interface {
 	// QUOTE
 	// ////////////
 
+	GetQuoteSummaries(ctx context.Context) ([]*QuoteSummary, error)
 	CreateQuote(ctx context.Context) (*Quote, error)
 	CreateDuplicateQuote(ctx context.Context, quoteId ID) (*Quote, error)
 	GetQuote(ctx context.Context, id ID) (*Quote, error)

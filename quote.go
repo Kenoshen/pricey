@@ -120,6 +120,20 @@ type PrintableQuote struct {
 	Locked                 bool                 `json:"locked" firestore:"locked"`
 }
 
+// QuoteSummary is a lightweight quote record for list views, with the bill-to
+// contact name embedded via a JOIN so the caller avoids N+1 queries.
+type QuoteSummary struct {
+	Id         ID        `json:"id"`
+	Code       string    `json:"code"`
+	BillToName string    `json:"billToName"` // from contacts JOIN; empty if no bill-to set
+	Total      int       `json:"total"`
+	Sent       bool      `json:"sent"`
+	Sold       bool      `json:"sold"`
+	Locked     bool      `json:"locked"`
+	Created    time.Time `json:"created"`
+	Updated    time.Time `json:"updated"`
+}
+
 // PrintableLineItem represents a line item in the printable quote.
 type PrintableLineItem struct {
 	Id               ID                   `json:"id" firestore:"id"`
